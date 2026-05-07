@@ -11,8 +11,11 @@ import java.util.List;
 @Repository
 public interface ItemRepository extends JpaRepository<Item, Long> {
     List<Item> findByPostedBy(User user);
+    
+    // These two methods already exist and work
     List<Item> findByLostFalseOrderByCreatedAtDesc();
     List<Item> findByLostTrueOrderByCreatedAtDesc();
+    
     List<Item> findByCategoryAndLost(String category, boolean lost);
     
     @Query("SELECT i FROM Item i WHERE i.lost = :isLost AND " +

@@ -144,4 +144,10 @@ public class ItemService {
             throw new RuntimeException("Failed to save photo: " + e.getMessage());
         }
     }
+
+    public List<Item> getAllActiveFoundItems() {
+    return itemRepository.findByLostFalseOrderByCreatedAtDesc().stream()
+            .filter(item -> "ACTIVE".equals(item.getStatus()))
+            .toList();
+    }
 }
