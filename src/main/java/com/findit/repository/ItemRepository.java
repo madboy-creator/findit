@@ -12,11 +12,10 @@ import java.util.List;
 public interface ItemRepository extends JpaRepository<Item, Long> {
     List<Item> findByPostedBy(User user);
     
-    // These two methods already exist and work
     List<Item> findByLostFalseOrderByCreatedAtDesc();
     List<Item> findByLostTrueOrderByCreatedAtDesc();
     
-    // Add this - gets ALL found items regardless of status
+    // ADD THESE TWO METHODS:
     @Query("SELECT i FROM Item i WHERE i.lost = false ORDER BY i.createdAt DESC")
     List<Item> findAllFoundItems();
     

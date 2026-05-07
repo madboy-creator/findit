@@ -39,7 +39,6 @@ public class ItemService {
         if (photo != null && !photo.isEmpty()) {
             item.setPhotoUrl(savePhoto(photo));
         }
-        System.out.println("✅ Saved found item: " + title + " by " + postedBy.getEmail());
         return itemRepository.save(item);
     }
 
@@ -58,30 +57,25 @@ public class ItemService {
         if (photo != null && !photo.isEmpty()) {
             item.setPhotoUrl(savePhoto(photo));
         }
-        System.out.println("✅ Saved lost item: " + title + " by " + postedBy.getEmail());
         return itemRepository.save(item);
     }
 
-    // FIXED: Now uses findAllFoundItems() to get ALL items
+    // Use the existing methods that work
     public List<Item> getAllFoundItems() {
-        List<Item> items = itemRepository.findAllFoundItems();
-        System.out.println("📦 Total found items in DB: " + items.size());
-        return items;
+        return itemRepository.findByLostFalseOrderByCreatedAtDesc();
     }
 
     public List<Item> getAllLostItems() {
-        List<Item> items = itemRepository.findAllLostItems();
-        System.out.println("⚠️ Total lost items in DB: " + items.size());
-        return items;
+        return itemRepository.findByLostTrueOrderByCreatedAtDesc();
     }
 
     public List<Item> getRecentFoundItems(int limit) {
-        List<Item> all = getAllFoundItems();
+        List<Item> all = itemRepository.findByLostFalseOrderByCreatedAtDesc();
         return all.size() > limit ? all.subList(0, limit) : all;
     }
 
     public List<Item> getRecentLostItems(int limit) {
-        List<Item> all = getAllLostItems();
+        List<Item> all = itemRepository.findByLostTrueOrderByCreatedAtDesc();
         return all.size() > limit ? all.subList(0, limit) : all;
     }
 
@@ -144,9 +138,5 @@ public class ItemService {
         } catch (IOException e) {
             throw new RuntimeException("Failed to save photo: " + e.getMessage());
         }
-    }
-
-    public List<Item> getAllActiveFoundItems() {
-        return getAllFoundItems(); // Now returns ALL found items
     }
 }
