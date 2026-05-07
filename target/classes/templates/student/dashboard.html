@@ -5,171 +5,359 @@
 
 <div th:replace="fragments/header :: navbar"></div>
 
-<div class="container" style="padding: 32px 24px;">
+<div class="dashboard-container">
     
     <!-- Welcome Banner -->
-    <div style="background: linear-gradient(135deg, #0066CC 0%, #00CCFF 100%); 
-                border-radius: 16px; padding: 32px; color: white; margin-bottom: 32px;">
-        <h1 style="color: white; margin-bottom: 8px;">Welcome back, <span th:text="${userName}">Student</span>! 👋</h1>
-        <p style="opacity: 0.9; margin: 0;">Help keep our campus organized - Report lost or found items today.</p>
+    <div class="welcome-banner">
+        <h1>Welcome back, <span th:text="${userName}">Student</span>!</h1>
+        <p>Help keep our campus organized - Report lost or found items today.</p>
     </div>
 
     <!-- Quick Actions -->
-    <div class="row" style="margin-bottom: 48px;">
-        <div class="col-6">
-            <div class="card" style="text-align: center; padding: 32px; transition: transform 0.2s;">
-                <i class="fas fa-search" style="font-size: 48px; color: #f59e0b; margin-bottom: 16px;"></i>
-                <h3>Lost Something?</h3>
-                <p style="margin-bottom: 20px; color: #6b7280;">Check if someone found your belongings</p>
-                <a href="/search?lost=false" class="btn btn-primary">Browse Found Items</a>
-            </div>
+    <div class="actions-grid">
+        <div class="action-card lost-card">
+            <div class="action-icon">🔍</div>
+            <h3>Lost Something?</h3>
+            <p>Check if someone found your belongings</p>
+            <a href="/search?lost=false" class="btn-action">Browse Found Items →</a>
         </div>
-        <div class="col-6">
-            <div class="card" style="text-align: center; padding: 32px; transition: transform 0.2s;">
-                <i class="fas fa-box-open" style="font-size: 48px; color: #10b981; margin-bottom: 16px;"></i>
-                <h3>Found Something?</h3>
-                <p style="margin-bottom: 20px; color: #6b7280;">Help someone recover their belonging</p>
-                <a href="/report-found" class="btn btn-primary">Report Found Item</a>
-            </div>
+        <div class="action-card found-card">
+            <div class="action-icon">📦</div>
+            <h3>Found Something?</h3>
+            <p>Help someone recover their belonging</p>
+            <a href="/report-found" class="btn-action">Report Found Item →</a>
         </div>
     </div>
 
-    <!-- My Stats -->
-    <div class="row" style="margin-bottom: 32px;">
-        <div class="col-4">
-            <div class="stat-card">
-                <i class="fas fa-box-open" style="font-size: 28px; color: #0066CC;"></i>
-                <div class="stat-number" th:text="${myFoundItemsCount}">0</div>
-                <div class="stat-label">Items I Found</div>
-            </div>
+    <!-- Stats Row -->
+    <div class="stats-grid">
+        <div class="stat-box">
+            <div class="stat-number" th:text="${myFoundItemsCount}">0</div>
+            <div class="stat-label">Items Found</div>
         </div>
-        <div class="col-4">
-            <div class="stat-card">
-                <i class="fas fa-search" style="font-size: 28px; color: #f59e0b;"></i>
-                <div class="stat-number" th:text="${myLostItemsCount}">0</div>
-                <div class="stat-label">Items I Lost</div>
-            </div>
+        <div class="stat-box">
+            <div class="stat-number" th:text="${myLostItemsCount}">0</div>
+            <div class="stat-label">Items Lost</div>
         </div>
-        <div class="col-4">
-            <div class="stat-card">
-                <i class="fas fa-file-alt" style="font-size: 28px; color: #10b981;"></i>
-                <div class="stat-number" th:text="${myClaimsCount}">0</div>
-                <div class="stat-label">My Claims</div>
-            </div>
+        <div class="stat-box">
+            <div class="stat-number" th:text="${myClaimsCount}">0</div>
+            <div class="stat-label">Claims Submitted</div>
         </div>
     </div>
 
-    <!-- Recent Found Items -->
-    <div class="card" style="margin-bottom: 32px;">
-        <div class="card-header">
-            <i class="fas fa-clock"></i> Recently Found Items
-        </div>
-        <div class="card-body">
-            <div th:if="${#lists.isEmpty(recentFoundItems)}" style="text-align: center; padding: 32px;">
-                <i class="fas fa-inbox" style="font-size: 48px; color: #d1d5db; margin-bottom: 16px;"></i>
+    <!-- Recent Items Section -->
+    <div class="recent-section">
+        <div class="section-half">
+            <div class="section-header">
+                <h2>📦 Recently Found</h2>
+                <a href="/search?lost=false" class="view-all">View all →</a>
+            </div>
+            <div th:if="${#lists.isEmpty(recentFoundItems)}" class="empty-state">
                 <p>No found items reported yet.</p>
-                <a href="/report-found" class="btn btn-primary btn-sm">Be the first to report!</a>
+                <a href="/report-found" class="btn-small">Report an item</a>
             </div>
-            <div th:each="item : ${recentFoundItems}" style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <strong><a th:href="@{/item/{id}(id=${item.id})}" th:text="${item.title}" style="color: #1f2937; text-decoration: none;"></a></strong>
-                        <div style="font-size: 13px; color: #6b7280; margin-top: 4px;">
-                            <i class="fas fa-map-marker-alt"></i> <span th:text="${item.location}"></span>
-                            <span style="margin: 0 8px;">•</span>
-                            <i class="fas fa-tag"></i> <span th:text="${item.category}"></span>
-                            <span style="margin: 0 8px;">•</span>
-                            <i class="fas fa-calendar"></i> <span th:text="${item.formattedCreatedAt}"></span>
-                        </div>
+            <div th:each="item : ${recentFoundItems}" class="item-row">
+                <div class="item-info">
+                    <a th:href="@{/item/{id}(id=${item.id})}" th:text="${item.title}" class="item-title"></a>
+                    <div class="item-meta">
+                        <span>📍 <span th:text="${item.location}"></span></span>
+                        <span>📅 <span th:text="${item.formattedCreatedAt}"></span></span>
                     </div>
-                    <a th:href="@{/item/{id}(id=${item.id})}" class="btn btn-outline btn-sm">View</a>
                 </div>
+                <a th:href="@{/item/{id}(id=${item.id})}" class="btn-view">View</a>
             </div>
         </div>
-    </div>
 
-    <!-- Recent Lost Items -->
-    <div class="card">
-        <div class="card-header">
-            <i class="fas fa-exclamation-triangle"></i> Recently Lost Items
-        </div>
-        <div class="card-body">
-            <div th:if="${#lists.isEmpty(recentLostItems)}" style="text-align: center; padding: 32px;">
-                <i class="fas fa-inbox" style="font-size: 48px; color: #d1d5db; margin-bottom: 16px;"></i>
-                <p>No lost items reported yet.</p>
-                <a href="/report-lost" class="btn btn-primary btn-sm">Report a lost item</a>
+        <div class="section-half">
+            <div class="section-header">
+                <h2>⚠️ Recently Lost</h2>
+                <a href="/search?lost=true" class="view-all">View all →</a>
             </div>
-            <div th:each="item : ${recentLostItems}" style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <strong><a th:href="@{/item/{id}(id=${item.id})}" th:text="${item.title}" style="color: #1f2937; text-decoration: none;"></a></strong>
-                        <div style="font-size: 13px; color: #6b7280; margin-top: 4px;">
-                            <i class="fas fa-map-marker-alt"></i> <span th:text="${item.location}"></span>
-                            <span style="margin: 0 8px;">•</span>
-                            <i class="fas fa-tag"></i> <span th:text="${item.category}"></span>
-                            <span style="margin: 0 8px;">•</span>
-                            <i class="fas fa-calendar"></i> <span th:text="${item.formattedCreatedAt}"></span>
-                        </div>
+            <div th:if="${#lists.isEmpty(recentLostItems)}" class="empty-state">
+                <p>No lost items reported yet.</p>
+                <a href="/report-lost" class="btn-small">Report a lost item</a>
+            </div>
+            <div th:each="item : ${recentLostItems}" class="item-row">
+                <div class="item-info">
+                    <a th:href="@{/item/{id}(id=${item.id})}" th:text="${item.title}" class="item-title"></a>
+                    <div class="item-meta">
+                        <span>📍 <span th:text="${item.location}"></span></span>
+                        <span>📅 <span th:text="${item.formattedCreatedAt}"></span></span>
                     </div>
-                    <a th:href="@{/item/{id}(id=${item.id})}" class="btn btn-outline btn-sm">View</a>
                 </div>
+                <a th:href="@{/item/{id}(id=${item.id})}" class="btn-view">View</a>
             </div>
         </div>
     </div>
 
     <!-- Quick Links -->
-    <div class="row" style="margin-top: 32px;">
-        <div class="col-6">
-            <div class="card" style="text-align: center;">
-                <div class="card-body">
-                    <i class="fas fa-boxes" style="font-size: 32px; color: #0066CC; margin-bottom: 12px;"></i>
-                    <h4>My Reported Items</h4>
-                    <p style="font-size: 13px; color: #6b7280;">Track all items you've reported</p>
-                    <a href="/my-items" class="btn btn-outline btn-sm">View My Items</a>
-                </div>
+    <div class="quick-links-grid">
+        <a href="/my-items" class="quick-link">
+            <span>📋</span>
+            <div>
+                <strong>My Reported Items</strong>
+                <small>Track all items you've reported</small>
             </div>
-        </div>
-        <div class="col-6">
-            <div class="card" style="text-align: center;">
-                <div class="card-body">
-                    <i class="fas fa-file-alt" style="font-size: 32px; color: #10b981; margin-bottom: 12px;"></i>
-                    <h4>My Claims</h4>
-                    <p style="font-size: 13px; color: #6b7280;">Track your claim requests</p>
-                    <a href="/my-claims" class="btn btn-outline btn-sm">View My Claims</a>
-                </div>
+        </a>
+        <a href="/my-claims" class="quick-link">
+            <span>📄</span>
+            <div>
+                <strong>My Claims</strong>
+                <small>Track your claim requests</small>
             </div>
-        </div>
+        </a>
     </div>
 </div>
 
 <style>
-    .stat-card {
-        text-align: center;
+    .dashboard-container {
+        max-width: 1200px;
+        margin: 0 auto;
         padding: 24px;
+    }
+
+    .welcome-banner {
+        background: linear-gradient(135deg, #0066CC 0%, #00CCFF 100%);
+        border-radius: 16px;
+        padding: 32px;
+        color: white;
+        margin-bottom: 32px;
+    }
+
+    .welcome-banner h1 {
+        margin: 0 0 8px 0;
+        font-size: 28px;
+        color: white;
+    }
+
+    .welcome-banner p {
+        margin: 0;
+        opacity: 0.9;
+    }
+
+    .actions-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+
+    .action-card {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .action-icon {
+        font-size: 48px;
+        margin-bottom: 12px;
+    }
+
+    .action-card h3 {
+        margin: 0 0 8px 0;
+        font-size: 20px;
+    }
+
+    .action-card p {
+        color: #6b7280;
+        margin-bottom: 16px;
+        font-size: 14px;
+    }
+
+    .btn-action {
+        display: inline-block;
+        background: #0066CC;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .btn-action:hover {
+        background: #0052a3;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 32px;
+    }
+
+    .stat-box {
         background: white;
         border-radius: 12px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        transition: transform 0.2s;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     }
-    .stat-card:hover {
-        transform: translateY(-2px);
-    }
+
     .stat-number {
-        font-size: 28px;
+        font-size: 32px;
         font-weight: bold;
-        color: #1f2937;
-        margin-top: 8px;
+        color: #0066CC;
     }
+
     .stat-label {
         color: #6b7280;
         font-size: 13px;
         margin-top: 4px;
     }
+
+    .recent-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .section-header h2 {
+        margin: 0;
+        font-size: 18px;
+    }
+
+    .view-all {
+        color: #0066CC;
+        text-decoration: none;
+        font-size: 13px;
+    }
+
+    .item-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .item-title {
+        font-weight: 500;
+        color: #1f2937;
+        text-decoration: none;
+    }
+
+    .item-title:hover {
+        color: #0066CC;
+    }
+
+    .item-meta {
+        font-size: 12px;
+        color: #6b7280;
+        margin-top: 4px;
+        display: flex;
+        gap: 12px;
+    }
+
+    .btn-view {
+        background: none;
+        color: #0066CC;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 500;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 32px;
+        background: #f9fafb;
+        border-radius: 12px;
+        color: #6b7280;
+    }
+
+    .btn-small {
+        display: inline-block;
+        margin-top: 12px;
+        background: #0066CC;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 12px;
+    }
+
+    .quick-links-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .quick-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: white;
+        border-radius: 12px;
+        padding: 16px;
+        text-decoration: none;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        transition: transform 0.2s;
+    }
+
+    .quick-link:hover {
+        transform: translateY(-2px);
+    }
+
+    .quick-link span {
+        font-size: 28px;
+    }
+
+    .quick-link strong {
+        display: block;
+        color: #1f2937;
+        font-size: 14px;
+    }
+
+    .quick-link small {
+        color: #6b7280;
+        font-size: 12px;
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-container {
+            padding: 16px;
+        }
+        
+        .actions-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+        
+        .recent-section {
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+        
+        .stats-grid {
+            gap: 12px;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+        }
+        
+        .welcome-banner {
+            padding: 20px;
+        }
+        
+        .welcome-banner h1 {
+            font-size: 22px;
+        }
+    }
 </style>
 
-<footer style="text-align: center; padding: 32px; border-top: 1px solid #e5e7eb; margin-top: 32px;">
-    <p>© 2024 FindIt - Campus Lost & Found System | CST</p>
-    <p style="margin-top: 8px; font-size: 12px; color: #6b7280;">❤️ Helping students recover what matters most</p>
+<footer style="text-align: center; padding: 24px; border-top: 1px solid #e5e7eb; margin-top: 32px;">
+    <p style="margin: 0; font-size: 13px; color: #6b7280;">© 2024 FindIt - Campus Lost & Found System | CST</p>
 </footer>
 
 </body>
