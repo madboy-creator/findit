@@ -39,6 +39,7 @@ public class ItemService {
         if (photo != null && !photo.isEmpty()) {
             item.setPhotoUrl(savePhoto(photo));
         }
+        System.out.println("✅ Saved found item: " + title + " by " + postedBy.getEmail());
         return itemRepository.save(item);
     }
 
@@ -57,24 +58,30 @@ public class ItemService {
         if (photo != null && !photo.isEmpty()) {
             item.setPhotoUrl(savePhoto(photo));
         }
+        System.out.println("✅ Saved lost item: " + title + " by " + postedBy.getEmail());
         return itemRepository.save(item);
     }
 
+    // FIXED: Now uses findAllFoundItems() to get ALL items
     public List<Item> getAllFoundItems() {
-        return itemRepository.findByLostFalseOrderByCreatedAtDesc();
+        List<Item> items = itemRepository.findAllFoundItems();
+        System.out.println("📦 Total found items in DB: " + items.size());
+        return items;
     }
 
     public List<Item> getAllLostItems() {
-        return itemRepository.findByLostTrueOrderByCreatedAtDesc();
+        List<Item> items = itemRepository.findAllLostItems();
+        System.out.println("⚠️ Total lost items in DB: " + items.size());
+        return items;
     }
 
     public List<Item> getRecentFoundItems(int limit) {
-        List<Item> all = itemRepository.findByLostFalseOrderByCreatedAtDesc();
+        List<Item> all = getAllFoundItems();
         return all.size() > limit ? all.subList(0, limit) : all;
     }
 
     public List<Item> getRecentLostItems(int limit) {
-        List<Item> all = itemRepository.findByLostTrueOrderByCreatedAtDesc();
+        List<Item> all = getAllLostItems();
         return all.size() > limit ? all.subList(0, limit) : all;
     }
 
@@ -92,9 +99,6 @@ public class ItemService {
         return itemRepository.findByCategoryAndLost(category, isLost);
     }
 
- // add this import
-
-// Fixed method
     public Item getItemById(Long id) {
         return itemRepository.findById(Objects.requireNonNull(id, "id must not be null"))
                 .orElseThrow(() -> new RuntimeException("Item not found with id: " + id));
@@ -116,7 +120,6 @@ public class ItemService {
         return itemRepository.countByStatusAndLost("ACTIVE", false);
     }
 
-    // Fixed: sanitize filename to prevent path traversal attacks
     private String savePhoto(MultipartFile photo) {
         try {
             Path uploadPath = Paths.get("uploads/");
@@ -128,13 +131,11 @@ public class ItemService {
             String extension = "";
             if (originalFilename != null && originalFilename.contains(".")) {
                 extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-                // Only allow safe image extensions
                 if (!extension.matches("\\.(jpg|jpeg|png|gif|webp)")) {
                     throw new RuntimeException("Invalid file type. Only images are allowed.");
                 }
             }
 
-            // Use only UUID as filename — never trust original filename
             String safeFileName = UUID.randomUUID().toString() + extension;
             Path filePath = uploadPath.resolve(safeFileName);
             Files.copy(photo.getInputStream(), filePath);
@@ -146,8 +147,6 @@ public class ItemService {
     }
 
     public List<Item> getAllActiveFoundItems() {
-    return itemRepository.findByLostFalseOrderByCreatedAtDesc().stream()
-            .filter(item -> "ACTIVE".equals(item.getStatus()))
-            .toList();
+        return getAllFoundItems(); // Now returns ALL found items
     }
 }

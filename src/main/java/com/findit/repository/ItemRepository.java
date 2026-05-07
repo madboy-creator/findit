@@ -16,6 +16,13 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     List<Item> findByLostFalseOrderByCreatedAtDesc();
     List<Item> findByLostTrueOrderByCreatedAtDesc();
     
+    // Add this - gets ALL found items regardless of status
+    @Query("SELECT i FROM Item i WHERE i.lost = false ORDER BY i.createdAt DESC")
+    List<Item> findAllFoundItems();
+    
+    @Query("SELECT i FROM Item i WHERE i.lost = true ORDER BY i.createdAt DESC")
+    List<Item> findAllLostItems();
+    
     List<Item> findByCategoryAndLost(String category, boolean lost);
     
     @Query("SELECT i FROM Item i WHERE i.lost = :isLost AND " +
