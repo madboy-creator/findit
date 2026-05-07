@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: header"></head>
+<body>
+
+<div th:replace="fragments/header :: navbar"></div>
+
+<div class="container" style="padding: 32px 24px;">
+    <h1>My Claims</h1>
+    
+    <!-- Pending Claims -->
+    <div class="card" style="margin-bottom: 32px;">
+        <div class="card-header">Pending Claims (<span th:text="${#lists.size(pendingClaims)}"></span>)</div>
+        <div class="card-body">
+            <div th:if="${pendingClaims.isEmpty()}" style="text-align: center; padding: 32px;">
+                <p>No pending claims.</p>
+            </div>
+            <div th:each="claim : ${pendingClaims}" style="padding: 16px; border-bottom: 1px solid #e5e7eb;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong><a th:href="@{/item/{id}(id=${claim.item.id})}" th:text="${claim.item.title}" style="color: #333;"></a></strong>
+                        <div style="font-size: 13px; color: #6b7280; margin-top: 4px;">
+                            <span th:text="${claim.item.location}"></span>
+                            <span style="margin: 0 8px;">•</span>
+                            Claimed on: <span th:text="${claim.formattedCreatedAt}"></span>
+                        </div>
+                    </div>
+                    <span class="badge badge-pending">Pending Review</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Approved Claims -->
+    <div class="card" style="margin-bottom: 32px;">
+        <div class="card-header">Approved Claims (<span th:text="${#lists.size(approvedClaims)}"></span>)</div>
+        <div class="card-body">
+            <div th:if="${approvedClaims.isEmpty()}" style="text-align: center; padding: 32px;">
+                <p>No approved claims.</p>
+            </div>
+            <div th:each="claim : ${approvedClaims}" style="padding: 16px; border-bottom: 1px solid #e5e7eb;">
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <strong><a th:href="@{/item/{id}(id=${claim.item.id})}" th:text="${claim.item.title}" style="color: #333;"></a></strong>
+                        <span class="badge badge-approved">Approved</span>
+                    </div>
+                    <div style="font-size: 13px; color: #6b7280; margin-top: 4px;">
+                        <span th:text="${claim.item.location}"></span>
+                        <span style="margin: 0 8px;">•</span>
+                        Approved on: <span th:text="${claim.formattedReviewedAt}"></span>
+                    </div>
+                    <div class="alert alert-success" style="margin-top: 12px; padding: 12px;">
+                        <i class="fas fa-gift"></i> Ready for pickup! Visit the Campus Security Desk with your student ID.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Rejected Claims -->
+    <div class="card">
+        <div class="card-header">Rejected Claims (<span th:text="${#lists.size(rejectedClaims)}"></span>)</div>
+        <div class="card-body">
+            <div th:if="${rejectedClaims.isEmpty()}" style="text-align: center; padding: 32px;">
+                <p>No rejected claims.</p>
+            </div>
+            <div th:each="claim : ${rejectedClaims}" style="padding: 16px; border-bottom: 1px solid #e5e7eb;">
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <strong><a th:href="@{/item/{id}(id=${claim.item.id})}" th:text="${claim.item.title}" style="color: #333;"></a></strong>
+                        <span class="badge badge-rejected">Rejected</span>
+                    </div>
+                    <div style="font-size: 13px; color: #6b7280; margin-top: 4px;">
+                        <span th:text="${claim.item.location}"></span>
+                        <span style="margin: 0 8px;">•</span>
+                        Reviewed on: <span th:text="${claim.formattedReviewedAt}"></span>
+                    </div>
+                    <div class="alert alert-danger" style="margin-top: 12px; padding: 12px;">
+                        <strong>Reason:</strong> <span th:text="${claim.rejectionReason}"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer style="text-align: center; padding: 32px; border-top: 1px solid #e5e7eb; margin-top: 32px;">
+    <p>© 2024 FindIt - Campus Lost & Found System | CST</p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: header"></head>
+<body>
+
+<div th:replace="fragments/header :: navbar"></div>
+
+<div class="container" style="padding: 32px 24px;">
+    
+    <!-- Welcome Banner -->
+    <div style="background: linear-gradient(135deg, #0066CC 0%, #00CCFF 100%); 
+                border-radius: 16px; padding: 32px; color: white; margin-bottom: 32px;">
+        <h1 style="color: white; margin-bottom: 8px;">Welcome back, <span th:text="${userName}">Student</span>! 👋</h1>
+        <p style="opacity: 0.9; margin: 0;">Help keep our campus organized - Report lost or found items today.</p>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row" style="margin-bottom: 48px;">
+        <div class="col-6">
+            <div class="card" style="text-align: center; padding: 32px; transition: transform 0.2s;">
+                <i class="fas fa-search" style="font-size: 48px; color: #f59e0b; margin-bottom: 16px;"></i>
+                <h3>Lost Something?</h3>
+                <p style="margin-bottom: 20px; color: #6b7280;">Check if someone found your belongings</p>
+                <a href="/search?lost=false" class="btn btn-primary">Browse Found Items</a>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="card" style="text-align: center; padding: 32px; transition: transform 0.2s;">
+                <i class="fas fa-box-open" style="font-size: 48px; color: #10b981; margin-bottom: 16px;"></i>
+                <h3>Found Something?</h3>
+                <p style="margin-bottom: 20px; color: #6b7280;">Help someone recover their belonging</p>
+                <a href="/report-found" class="btn btn-primary">Report Found Item</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Stats -->
+    <div class="row" style="margin-bottom: 32px;">
+        <div class="col-4">
+            <div class="stat-card">
+                <i class="fas fa-box-open" style="font-size: 28px; color: #0066CC;"></i>
+                <div class="stat-number" th:text="${myFoundItemsCount}">0</div>
+                <div class="stat-label">Items I Found</div>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="stat-card">
+                <i class="fas fa-search" style="font-size: 28px; color: #f59e0b;"></i>
+                <div class="stat-number" th:text="${myLostItemsCount}">0</div>
+                <div class="stat-label">Items I Lost</div>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="stat-card">
+                <i class="fas fa-file-alt" style="font-size: 28px; color: #10b981;"></i>
+                <div class="stat-number" th:text="${myClaimsCount}">0</div>
+                <div class="stat-label">My Claims</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Found Items -->
+    <div class="card" style="margin-bottom: 32px;">
+        <div class="card-header">
+            <i class="fas fa-clock"></i> Recently Found Items
+        </div>
+        <div class="card-body">
+            <div th:if="${#lists.isEmpty(recentFoundItems)}" style="text-align: center; padding: 32px;">
+                <i class="fas fa-inbox" style="font-size: 48px; color: #d1d5db; margin-bottom: 16px;"></i>
+                <p>No found items reported yet.</p>
+                <a href="/report-found" class="btn btn-primary btn-sm">Be the first to report!</a>
+            </div>
+            <div th:each="item : ${recentFoundItems}" style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong><a th:href="@{/item/{id}(id=${item.id})}" th:text="${item.title}" style="color: #1f2937; text-decoration: none;"></a></strong>
+                        <div style="font-size: 13px; color: #6b7280; margin-top: 4px;">
+                            <i class="fas fa-map-marker-alt"></i> <span th:text="${item.location}"></span>
+                            <span style="margin: 0 8px;">•</span>
+                            <i class="fas fa-tag"></i> <span th:text="${item.category}"></span>
+                            <span style="margin: 0 8px;">•</span>
+                            <i class="fas fa-calendar"></i> <span th:text="${item.formattedCreatedAt}"></span>
+                        </div>
+                    </div>
+                    <a th:href="@{/item/{id}(id=${item.id})}" class="btn btn-outline btn-sm">View</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Lost Items -->
+    <div class="card">
+        <div class="card-header">
+            <i class="fas fa-exclamation-triangle"></i> Recently Lost Items
+        </div>
+        <div class="card-body">
+            <div th:if="${#lists.isEmpty(recentLostItems)}" style="text-align: center; padding: 32px;">
+                <i class="fas fa-inbox" style="font-size: 48px; color: #d1d5db; margin-bottom: 16px;"></i>
+                <p>No lost items reported yet.</p>
+                <a href="/report-lost" class="btn btn-primary btn-sm">Report a lost item</a>
+            </div>
+            <div th:each="item : ${recentLostItems}" style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong><a th:href="@{/item/{id}(id=${item.id})}" th:text="${item.title}" style="color: #1f2937; text-decoration: none;"></a></strong>
+                        <div style="font-size: 13px; color: #6b7280; margin-top: 4px;">
+                            <i class="fas fa-map-marker-alt"></i> <span th:text="${item.location}"></span>
+                            <span style="margin: 0 8px;">•</span>
+                            <i class="fas fa-tag"></i> <span th:text="${item.category}"></span>
+                            <span style="margin: 0 8px;">•</span>
+                            <i class="fas fa-calendar"></i> <span th:text="${item.formattedCreatedAt}"></span>
+                        </div>
+                    </div>
+                    <a th:href="@{/item/{id}(id=${item.id})}" class="btn btn-outline btn-sm">View</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="row" style="margin-top: 32px;">
+        <div class="col-6">
+            <div class="card" style="text-align: center;">
+                <div class="card-body">
+                    <i class="fas fa-boxes" style="font-size: 32px; color: #0066CC; margin-bottom: 12px;"></i>
+                    <h4>My Reported Items</h4>
+                    <p style="font-size: 13px; color: #6b7280;">Track all items you've reported</p>
+                    <a href="/my-items" class="btn btn-outline btn-sm">View My Items</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="card" style="text-align: center;">
+                <div class="card-body">
+                    <i class="fas fa-file-alt" style="font-size: 32px; color: #10b981; margin-bottom: 12px;"></i>
+                    <h4>My Claims</h4>
+                    <p style="font-size: 13px; color: #6b7280;">Track your claim requests</p>
+                    <a href="/my-claims" class="btn btn-outline btn-sm">View My Claims</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .stat-card {
+        text-align: center;
+        padding: 24px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+    .stat-card:hover {
+        transform: translateY(-2px);
+    }
+    .stat-number {
+        font-size: 28px;
+        font-weight: bold;
+        color: #1f2937;
+        margin-top: 8px;
+    }
+    .stat-label {
+        color: #6b7280;
+        font-size: 13px;
+        margin-top: 4px;
+    }
+</style>
+
+<footer style="text-align: center; padding: 32px; border-top: 1px solid #e5e7eb; margin-top: 32px;">
+    <p>© 2024 FindIt - Campus Lost & Found System | CST</p>
+    <p style="margin-top: 8px; font-size: 12px; color: #6b7280;">❤️ Helping students recover what matters most</p>
+</footer>
+
+</body>
+</html>

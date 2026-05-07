@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: header"></head>
+<body>
+
+<div th:replace="fragments/header :: navbar"></div>
+
+<div class="container" style="padding: 32px 24px; max-width: 1000px;">
+    <div class="row">
+
+        <!-- Left: Item Details -->
+        <div class="col-8">
+            <div class="card">
+                <div class="card-body">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <h1 style="font-size: 28px; margin: 0;">
+                            <span th:text="${item.categoryIcon}"></span>
+                            <span th:text="${item.title}"></span>
+                        </h1>
+                        <span class="badge"
+                              th:class="${item.lost} ? 'badge-pending' : 'badge-approved'"
+                              th:text="${item.lost} ? 'Lost' : 'Found'">
+                        </span>
+                    </div>
+
+                    <div th:if="${item.photoUrl}" style="margin-bottom: 24px;">
+                        <img th:src="${item.photoUrl}"
+                             alt="Item photo"
+                             style="max-width: 100%; border-radius: 8px;"/>
+                    </div>
+
+                    <div class="row" style="margin-bottom: 24px;">
+                        <div class="col-6">
+                            <p><strong>📍 Location:</strong>
+                                <span th:text="${item.location}"></span></p>
+                            <p><strong>🏷 Category:</strong>
+                                <span th:text="${item.category}"></span></p>
+                        </div>
+                        <div class="col-6">
+                            <p><strong>📅 Reported:</strong>
+                                <span th:text="${item.formattedCreatedAt}"></span></p>
+                            <p><strong>🔖 Status:</strong>
+                                <span class="badge"
+                                      th:class="${item.statusBadgeClass}"
+                                      th:text="${item.status}">
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Fixed: null-safe check on postedBy -->
+                    <p th:if="${item.postedBy != null}">
+                        <strong>👤 Reported by:</strong>
+                        <span th:text="${item.postedBy.name}"></span>
+                    </p>
+
+                    <h3 style="margin-top: 16px;">Description</h3>
+                    <p th:text="${item.description}" style="white-space: pre-wrap;"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Claim Panel -->
+        <div class="col-4">
+
+            <!--
+                Fixed: claim button now hidden if:
+                - item is a lost report (nothing to claim)
+                - item is already CLAIMED or RESOLVED
+                - logged-in user is the one who posted it
+            -->
+            <div th:if="${!item.lost
+                          and item.status != 'RESOLVED'
+                          and item.status != 'CLAIMED'
+                          and (item.postedBy == null or item.postedBy.email != #authentication.name)}"
+                 class="card" style="margin-bottom: 24px;">
+                <div class="card-body" style="text-align: center;">
+                    <div style="font-size: 48px; margin-bottom: 16px;">🙋</div>
+                    <h3>This matches your item?</h3>
+                    <p style="margin-bottom: 20px;">Submit a claim with verification details</p>
+                    <a th:href="@{/claim/{id}(id=${item.id})}"
+                       class="btn btn-primary"
+                       style="width: 100%;">Claim This Item</a>
+                </div>
+            </div>
+
+            <!-- Already claimed -->
+            <div th:if="${!item.lost and item.status == 'CLAIMED'}"
+                 class="card"
+                 style="margin-bottom: 24px; background: #d1fae5;">
+                <div class="card-body" style="text-align: center;">
+                    <div style="font-size: 48px; margin-bottom: 16px;">✅</div>
+                    <h3>Claim in Progress</h3>
+                    <p>This item has been claimed and is pending verification.</p>
+                </div>
+            </div>
+
+            <!-- Resolved -->
+            <div th:if="${item.status == 'RESOLVED'}"
+                 class="card"
+                 style="margin-bottom: 24px; background: #0066CC;">
+                <div class="card-body" style="text-align: center;">
+                    <div style="font-size: 48px; margin-bottom: 16px;">✔️</div>
+                    <h3 style="color: white;">Item Resolved</h3>
+                    <p style="color: white;">This item has been returned to its owner.</p>
+                </div>
+            </div>
+
+            <!-- Admin: view claims on this item -->
+            <div th:if="${claims != null and !#lists.isEmpty(claims)}" class="card">
+                <div class="card-body">
+                    <h4>Claims (<span th:text="${#lists.size(claims)}"></span>)</h4>
+                    <div th:each="claim : ${claims}" style="border-top: 1px solid #eee; padding-top: 12px; margin-top: 12px;">
+                        <p><strong th:text="${claim.claimant.name}"></strong></p>
+                        <p style="font-size: 13px; color: #555;" th:text="${claim.answers}"></p>
+                        <span class="badge"
+                              th:class="${claim.statusBadgeClass}"
+                              th:text="${claim.status}">
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<footer style="text-align: center; padding: 32px; border-top: 1px solid #e5e7eb; margin-top: 32px;">
+    <p>© 2024 FindIt - Campus Lost &amp; Found System | CST</p>
+</footer>
+
+</body>
+</html>

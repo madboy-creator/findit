@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: header"></head>
+<body>
+
+<div th:replace="fragments/header :: navbar"></div>
+
+<div class="container" style="padding: 32px 24px;">
+    <h1>My Reported Items</h1>
+    
+    <div class="row">
+        <div class="col-6">
+            <div class="card">
+                <div class="card-header">Found Items (<span th:text="${#lists.size(foundItems)}"></span>)</div>
+                <div class="card-body">
+                    <div th:if="${foundItems.isEmpty()}" style="text-align: center; padding: 32px;">
+                        <p>No found items reported yet.</p>
+                        <a href="/report-found" class="btn btn-primary btn-sm">Report Found Item</a>
+                    </div>
+                    <div th:each="item : ${foundItems}" style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong><a th:href="@{/item/{id}(id=${item.id})}" th:text="${item.title}" style="color: #333;"></a></strong>
+                                <div style="font-size: 13px; color: #6b7280;">
+                                    <span th:text="${item.location}"></span>
+                                    <span style="margin: 0 8px;">•</span>
+                                    <span class="badge" th:class="${item.statusBadgeClass}" th:text="${item.status}"></span>
+                                </div>
+                            </div>
+                            <a th:href="@{/item/{id}(id=${item.id})}" class="btn btn-outline btn-sm">View</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-6">
+            <div class="card">
+                <div class="card-header">Lost Items (<span th:text="${#lists.size(lostItems)}"></span>)</div>
+                <div class="card-body">
+                    <div th:if="${lostItems.isEmpty()}" style="text-align: center; padding: 32px;">
+                        <p>No lost items reported yet.</p>
+                        <a href="/report-lost" class="btn btn-primary btn-sm">Report Lost Item</a>
+                    </div>
+                    <div th:each="item : ${lostItems}" style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong><a th:href="@{/item/{id}(id=${item.id})}" th:text="${item.title}" style="color: #333;"></a></strong>
+                                <div style="font-size: 13px; color: #6b7280;">
+                                    <span th:text="${item.location}"></span>
+                                    <span style="margin: 0 8px;">•</span>
+                                    <span class="badge" th:class="${item.statusBadgeClass}" th:text="${item.status}"></span>
+                                </div>
+                            </div>
+                            <a th:href="@{/item/{id}(id=${item.id})}" class="btn btn-outline btn-sm">View</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer style="text-align: center; padding: 32px; border-top: 1px solid #e5e7eb; margin-top: 32px;">
+    <p>© 2024 FindIt - Campus Lost & Found System | CST</p>
+</footer>
+
+</body>
+</html>

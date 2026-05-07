@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: header"></head>
+<body>
+
+<div th:replace="fragments/header :: navbar"></div>
+
+<div class="container" style="padding: 32px 24px; max-width: 800px;">
+    <div class="card">
+        <div class="card-header">🔍 Report Lost Item</div>
+        <div class="card-body">
+
+            <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+            <form method="post" enctype="multipart/form-data" th:action="@{/report-lost}">
+                <div class="form-group">
+                    <label class="form-label">Item Title *</label>
+                    <input type="text" name="title" class="form-control" required
+                           placeholder="e.g., MacBook Pro, Student ID Card"/>
+                </div>
+
+                <!-- Fixed: category options match Item.getCategoryIcon() -->
+                <div class="form-group">
+                    <label class="form-label">Category *</label>
+                    <select name="category" class="form-select" required>
+                        <option value="">Select category</option>
+                        <option value="PHONE">📱 Phone</option>
+                        <option value="LAPTOP">💻 Laptop</option>
+                        <option value="ID_CARD">🪪 ID Card</option>
+                        <option value="WATER_BOTTLE">💧 Water Bottle</option>
+                        <option value="KEYS">🔑 Keys</option>
+                        <option value="WALLET">👛 Wallet</option>
+                        <option value="BOOK">📚 Book</option>
+                        <option value="BAG">🎒 Bag</option>
+                        <option value="GLASSES">👓 Glasses</option>
+                        <option value="CHARGER">🔌 Charger</option>
+                        <option value="OTHER">📦 Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Location Lost *</label>
+                    <input type="text" name="location" class="form-control" required
+                           placeholder="e.g., Muhabura Hall Room 203, Library"/>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Description *</label>
+                    <textarea name="description" class="form-control" rows="5" required
+                              placeholder="Describe your item - color, brand, model, serial number (if known), any unique identifiers..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Photo (Optional)</label>
+                    <input type="file" name="photo" class="form-control"
+                           accept="image/jpeg,image/png,image/jpg,image/webp"/>
+                </div>
+
+                <div class="alert alert-info" style="margin-top: 8px;">
+                    💡 <strong>Pro Tip:</strong> Provide as many details as possible to help identify your item.
+                </div>
+
+                <div style="display: flex; gap: 16px; margin-top: 16px;">
+                    <button type="submit" class="btn btn-primary">Report Lost Item</button>
+                    <a href="/dashboard" class="btn btn-outline">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<footer style="text-align: center; padding: 32px; border-top: 1px solid #e5e7eb; margin-top: 32px;">
+    <p>© 2024 FindIt - Campus Lost &amp; Found System | CST</p>
+</footer>
+
+</body>
+</html>

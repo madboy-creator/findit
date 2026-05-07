@@ -1,0 +1,39 @@
+# Compiled files
+/target/
+!/target/classes/
+!/target/test-classes/
+
+# IDE files
+.idea/
+*.iml
+.project
+.classpath
+.settings/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Log files
+*.log
+logs/
+
+# Application specific
+uploads/
+*.db
+*.tmp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Maven
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+release.properties
+
+# Environment files
+application-local.properties
+application-dev.properties
+*.secret

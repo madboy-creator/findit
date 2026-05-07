@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="footer" class="footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <h5 class="fw-bold text-white mb-3">
+                    <i class="fas fa-search me-2"></i>FindIt
+                </h5>
+                <p class="text-white-50 small">
+                    The official campus lost and found system for CST. 
+                    Helping students recover what matters most.
+                </p>
+                <div class="mt-3">
+                    <a href="#" class="text-white-50 me-3"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="text-white-50 me-3"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="text-white-50 me-3"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="text-white-50"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+            
+            <div class="col-md-2 mb-4">
+                <h6 class="fw-bold text-white mb-3">Quick Links</h6>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="/dashboard" class="text-white-50 text-decoration-none">Dashboard</a></li>
+                    <li class="mb-2"><a href="/report-found" class="text-white-50 text-decoration-none">Report Found</a></li>
+                    <li class="mb-2"><a href="/report-lost" class="text-white-50 text-decoration-none">Report Lost</a></li>
+                    <li class="mb-2"><a href="/search" class="text-white-50 text-decoration-none">Search Items</a></li>
+                </ul>
+            </div>
+            
+            <div class="col-md-3 mb-4">
+                <h6 class="fw-bold text-white mb-3">Support</h6>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Help Center</a></li>
+                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Contact Admin</a></li>
+                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Report an Issue</a></li>
+                    <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Privacy Policy</a></li>
+                </ul>
+            </div>
+            
+            <div class="col-md-3 mb-4">
+                <h6 class="fw-bold text-white mb-3">Contact Info</h6>
+                <ul class="list-unstyled text-white-50 small">
+                    <li class="mb-2">
+                        <i class="fas fa-map-marker-alt me-2"></i>CST Campus, Muhabura Hall
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-envelope me-2"></i>support@findit.com
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-phone me-2"></i>+250 788 123 456
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-clock me-2"></i>Mon-Fri: 8:00 AM - 6:00 PM
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <hr class="bg-white-50">
+        
+        <div class="text-center py-3">
+            <p class="mb-0 small text-white-50">
+                © 2024 FindIt - Campus Lost & Found System | 
+                <a href="#" class="text-white-50 text-decoration-none">Terms of Service</a> | 
+                <a href="#" class="text-white-50 text-decoration-none">Privacy Policy</a>
+            </p>
+            <p class="mb-0 small text-white-50 mt-1">
+                <i class="fas fa-heart text-danger"></i> Helping students recover what matters most
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .footer {
+        background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+        margin-top: 4rem;
+        padding-top: 3rem;
+        padding-bottom: 1rem;
+    }
+    
+    .footer a:hover {
+        color: white !important;
+        transition: color 0.3s ease;
+    }
+    
+    hr.bg-white-50 {
+        background-color: rgba(255,255,255,0.1);
+    }
+</style>
+</html>

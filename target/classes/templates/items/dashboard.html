@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: header"></head>
+<body>
+
+<div th:replace="fragments/header :: navbar"></div>
+
+<div class="container" style="padding: 32px 24px;">
+
+    <div style="margin-bottom: 32px;">
+        <h1>Welcome back, <span th:text="${userName}">Student</span>!</h1>
+        <p style="color: #6b7280;">Help keep our campus organized — report lost or found items today.</p>
+    </div>
+
+    <!-- Flash messages -->
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+    <div th:if="${error}"   class="alert alert-danger"  th:text="${error}"></div>
+
+    <!-- Quick Action Cards -->
+    <div class="row" style="margin-bottom: 48px;">
+        <div class="col-6">
+            <div class="card" style="text-align: center; padding: 32px;">
+                <div style="font-size: 48px; margin-bottom: 16px;">🔍</div>
+                <h3>Lost Something?</h3>
+                <p style="margin-bottom: 20px; color: #6b7280;">Check if someone found your belongings</p>
+                <a href="/search?lost=false" class="btn btn-primary">Browse Found Items</a>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="card" style="text-align: center; padding: 32px;">
+                <div style="font-size: 48px; margin-bottom: 16px;">📦</div>
+                <h3>Found Something?</h3>
+                <p style="margin-bottom: 20px; color: #6b7280;">Help someone recover their belonging</p>
+                <a href="/report-found" class="btn btn-primary">Report Found Item</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Items -->
+    <div class="row">
+
+        <!-- Fixed: was ${recentFound} → now ${recentFoundItems} to match controller -->
+        <div class="col-6">
+            <div class="card">
+                <div class="card-header">Recently Found Items</div>
+                <div class="card-body">
+                    <!-- Fixed: #lists.isEmpty() instead of .isEmpty() — null safe -->
+                    <div th:if="${#lists.isEmpty(recentFoundItems)}"
+                         style="text-align: center; padding: 32px; color: #6b7280;">
+                        <p>No found items reported yet.</p>
+                        <a href="/report-found" class="btn btn-primary btn-sm"
+                           style="margin-top: 8px;">Be the first to report</a>
+                    </div>
+                    <div th:each="item : ${recentFoundItems}"
+                         style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>
+                                    <a th:href="@{/item/{id}(id=${item.id})}"
+                                       th:text="${item.title}"
+                                       style="color: #333;"></a>
+                                </strong>
+                                <div style="font-size: 13px; color: #6b7280; margin-top: 2px;">
+                                    📍 <span th:text="${item.location}"></span>
+                                    <span style="margin: 0 8px;">•</span>
+                                    <span th:text="${item.categoryIcon}"></span>
+                                    <span th:text="${item.category}"></span>
+                                </div>
+                            </div>
+                            <a th:href="@{/item/{id}(id=${item.id})}"
+                               class="btn btn-outline btn-sm">View</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fixed: was ${recentLost} → now ${recentLostItems} to match controller -->
+        <div class="col-6">
+            <div class="card">
+                <div class="card-header">Recently Lost Items</div>
+                <div class="card-body">
+                    <!-- Fixed: #lists.isEmpty() instead of .isEmpty() — null safe -->
+                    <div th:if="${#lists.isEmpty(recentLostItems)}"
+                         style="text-align: center; padding: 32px; color: #6b7280;">
+                        <p>No lost items reported yet.</p>
+                        <a href="/report-lost" class="btn btn-primary btn-sm"
+                           style="margin-top: 8px;">Report a lost item</a>
+                    </div>
+                    <div th:each="item : ${recentLostItems}"
+                         style="padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>
+                                    <a th:href="@{/item/{id}(id=${item.id})}"
+                                       th:text="${item.title}"
+                                       style="color: #333;"></a>
+                                </strong>
+                                <div style="font-size: 13px; color: #6b7280; margin-top: 2px;">
+                                    📍 <span th:text="${item.location}"></span>
+                                    <span style="margin: 0 8px;">•</span>
+                                    <span th:text="${item.categoryIcon}"></span>
+                                    <span th:text="${item.category}"></span>
+                                </div>
+                            </div>
+                            <a th:href="@{/item/{id}(id=${item.id})}"
+                               class="btn btn-outline btn-sm">View</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<footer style="text-align: center; padding: 32px; border-top: 1px solid #e5e7eb; margin-top: 32px;">
+    <p>© 2024 FindIt - Campus Lost &amp; Found System | CST</p>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: header"></head>
+<body>
+
+<div th:replace="fragments/header :: navbar"></div>
+
+<div class="container" style="padding: 32px 24px;">
+    <h1>Admin Dashboard</h1>
+
+    <!-- Stats Row -->
+    <div class="row" style="margin-bottom: 32px;">
+        <div class="col-3">
+            <div class="stat-card">
+                <div class="stat-number" th:text="${stats.totalUsers}">0</div>
+                <div class="stat-label">Total Users</div>
+            </div>
+        </div>
+        <div class="col-3">
+            <div class="stat-card">
+                <div class="stat-number" th:text="${stats.foundItems}">0</div>
+                <div class="stat-label">Found Items</div>
+            </div>
+        </div>
+        <div class="col-3">
+            <div class="stat-card">
+                <div class="stat-number" th:text="${stats.lostItems}">0</div>
+                <div class="stat-label">Lost Items</div>
+            </div>
+        </div>
+        <div class="col-3">
+            <div class="stat-card">
+                <div class="stat-number" th:text="${stats.pendingClaims}">0</div>
+                <div class="stat-label">Pending Claims</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Claims -->
+    <div class="card">
+        <div class="card-header">
+            Pending Claims to Review
+            <a href="/admin/claims" style="float: right; font-size: 13px;">View All →</a>
+        </div>
+        <div class="card-body">
+
+            <div th:if="${#lists.isEmpty(pendingClaims)}"
+                 style="text-align: center; padding: 32px; color: #6b7280;">
+                <p>✅ No pending claims. All caught up!</p>
+            </div>
+
+            <div th:each="claim : ${pendingClaims}"
+                 style="padding: 20px; border-bottom: 1px solid #e5e7eb;">
+                <div class="row" style="align-items: center;">
+
+                    <div class="col-3">
+                        <strong>Item</strong><br/>
+                        <a th:href="@{/item/{id}(id=${claim.item.id})}"
+                           th:text="${claim.item.title}"
+                           style="color: #0066CC;"></a><br/>
+                        <span class="badge badge-pending"
+                              th:text="${claim.item.status}"></span>
+                    </div>
+
+                    <div class="col-3">
+                        <strong>Claimant</strong><br/>
+                        <span th:text="${claim.claimant.name}"></span><br/>
+                        <span style="font-size: 13px; color: #6b7280;"
+                              th:text="${claim.claimant.email}"></span>
+                    </div>
+
+                    <!-- Fixed: null-safe answers truncation -->
+                    <div class="col-3">
+                        <strong>Answers</strong><br/>
+                        <span style="font-size: 13px;"
+                              th:text="${claim.answers != null and claim.answers.length() > 100}
+                                        ? ${claim.answers.substring(0, 100) + '...'}
+                                        : ${claim.answers}">
+                        </span>
+                    </div>
+
+                    <!-- Fixed: reject form now has input for custom reason -->
+                    <div class="col-2" style="display: flex; flex-direction: column; gap: 8px;">
+                        <form method="post"
+                              th:action="@{/admin/claim/{id}/approve(id=${claim.id})}">
+                            <input type="hidden"
+                                   th:name="${_csrf.parameterName}"
+                                   th:value="${_csrf.token}"/>
+                            <button type="submit" class="btn btn-success btn-sm"
+                                    style="width: 100%;">✔ Approve</button>
+                        </form>
+                        <form method="post"
+                              th:action="@{/admin/claim/{id}/reject(id=${claim.id})}"
+                              style="display: flex; flex-direction: column; gap: 4px;">
+                            <input type="hidden"
+                                   th:name="${_csrf.parameterName}"
+                                   th:value="${_csrf.token}"/>
+                            <input type="text" name="reason"
+                                   placeholder="Rejection reason"
+                                   required
+                                   style="padding: 6px; border: 1px solid #d1d5db;
+                                          border-radius: 4px; font-size: 12px;"/>
+                            <button type="submit" class="btn btn-danger btn-sm">✖ Reject</button>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Items -->
+    <div class="row" style="margin-top: 24px;">
+        <div class="col-6">
+            <div class="card">
+                <div class="card-header">Recently Found Items</div>
+                <div class="card-body">
+                    <div th:if="${#lists.isEmpty(recentFoundItems)}"
+                         style="color: #6b7280; text-align: center; padding: 16px;">
+                        No found items yet.
+                    </div>
+                    <div th:each="item : ${recentFoundItems}"
+                         style="padding: 10px 0; border-bottom: 1px solid #f3f4f6;">
+                        <a th:href="@{/item/{id}(id=${item.id})}"
+                           th:text="${item.title}"
+                           style="color: #0066CC; font-weight: 500;"></a><br/>
+                        <span style="font-size: 12px; color: #6b7280;"
+                              th:text="${item.location}"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="card">
+                <div class="card-header">Recently Lost Items</div>
+                <div class="card-body">
+                    <div th:if="${#lists.isEmpty(recentLostItems)}"
+                         style="color: #6b7280; text-align: center; padding: 16px;">
+                        No lost items yet.
+                    </div>
+                    <div th:each="item : ${recentLostItems}"
+                         style="padding: 10px 0; border-bottom: 1px solid #f3f4f6;">
+                        <a th:href="@{/item/{id}(id=${item.id})}"
+                           th:text="${item.title}"
+                           style="color: #0066CC; font-weight: 500;"></a><br/>
+                        <span style="font-size: 12px; color: #6b7280;"
+                              th:text="${item.location}"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<footer style="text-align: center; padding: 32px; border-top: 1px solid #e5e7eb; margin-top: 32px;">
+    <p>© 2024 FindIt - Campus Lost &amp; Found System | CST</p>
+</footer>
+
+</body>
+</html>

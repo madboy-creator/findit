@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header :: header"></head>
+<body>
+
+<div th:replace="fragments/header :: navbar"></div>
+
+<div class="container" style="padding: 32px 24px;">
+    <h1>Pending Claims</h1>
+    
+    <div class="card">
+        <div class="card-body">
+            <div th:if="${claims.isEmpty()}" style="text-align: center; padding: 48px;">
+                <p>No pending claims to review.</p>
+                <a href="/admin/dashboard" class="btn btn-primary">Back to Dashboard</a>
+            </div>
+            
+            <div th:each="claim : ${claims}" style="padding: 24px; border-bottom: 1px solid #e5e7eb;">
+                <h3>Claim #<span th:text="${claim.id}"></span></h3>
+                
+                <div class="row" style="margin-bottom: 20px;">
+                    <div class="col-6">
+                        <h4>Item Information</h4>
+                        <p><strong>Title:</strong> <span th:text="${claim.item.title}"></span></p>
+                        <p><strong>Category:</strong> <span th:text="${claim.item.category}"></span></p>
+                        <p><strong>Location:</strong> <span th:text="${claim.item.location}"></span></p>
+                    </div>
+                    <div class="col-6">
+                        <h4>Claimant Information</h4>
+                        <p><strong>Name:</strong> <span th:text="${claim.claimant.name}"></span></p>
+                        <p><strong>Email:</strong> <span th:text="${claim.claimant.email}"></span></p>
+                        <p><strong>Student ID:</strong> <span th:text="${claim.claimant.studentId}"></span></p>
+                    </div>
+                </div>
+                
+                <div style="background: #f9fafb; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+                    <h4>Verification Answers</h4>
+                    <p th:text="${claim.answers}" style="white-space: pre-wrap;"></p>
+                </div>
+                
+                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                    <form method="post" th:action="@{/admin/claim/{id}/approve(id=${claim.id})}">
+                        <button type="submit" class="btn btn-success">Approve Claim</button>
+                    </form>
+                    <form method="post" th:action="@{/admin/claim/{id}/reject(id=${claim.id})}">
+                        <input type="text" name="reason" placeholder="Reason for rejection" required style="padding: 8px; margin-right: 8px;">
+                        <button type="submit" class="btn btn-danger">Reject</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer style="text-align: center; padding: 32px; border-top: 1px solid #e5e7eb; margin-top: 32px;">
+    <p>© 2024 FindIt - Campus Lost & Found System | CST</p>
+</footer>
+
+</body>
+</html>
