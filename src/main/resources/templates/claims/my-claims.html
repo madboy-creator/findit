@@ -1,92 +1,73 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/header :: header"></head>
-<body>
+<head th:replace="~{fragments/layout :: common-head('My Claims')}"></head>
+<body x-data="{ selectedClaim: null, showDetailsModal: false }">
 
-<div th:replace="fragments/header :: navbar"></div>
+<div th:replace="~{fragments/layout :: navbar}"></div>
 
-<div class="container" style="padding: 32px 24px;">
-    <h1>My Claims</h1>
-    
-    <!-- Pending Claims -->
-    <div class="card" style="margin-bottom: 32px;">
-        <div class="card-header">Pending Claims (<span th:text="${#lists.size(pendingClaims)}"></span>)</div>
-        <div class="card-body">
-            <div th:if="${pendingClaims.isEmpty()}" style="text-align: center; padding: 32px;">
-                <p>No pending claims.</p>
-            </div>
-            <div th:each="claim : ${pendingClaims}" style="padding: 16px; border-bottom: 1px solid #e5e7eb;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <strong><a th:href="@{/item/{id}(id=${claim.item.id})}" th:text="${claim.item.title}" style="color: #333;"></a></strong>
-                        <div style="font-size: 13px; color: #6b7280; margin-top: 4px;">
-                            <span th:text="${claim.item.location}"></span>
-                            <span style="margin: 0 8px;">•</span>
-                            Claimed on: <span th:text="${claim.formattedCreatedAt}"></span>
-                        </div>
-                    </div>
-                    <span class="badge badge-pending">Pending Review</span>
-                </div>
-            </div>
+<div class="py-6 px-4">
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+        <div class="px-6 py-5 border-b border-gray-200">
+            <h2 class="text-2xl font-bold text-gray-900">My Claims</h2>
+            <p class="text-sm text-gray-600 mt-1">Track the status of your submitted claims</p>
         </div>
-    </div>
-    
-    <!-- Approved Claims -->
-    <div class="card" style="margin-bottom: 32px;">
-        <div class="card-header">Approved Claims (<span th:text="${#lists.size(approvedClaims)}"></span>)</div>
-        <div class="card-body">
-            <div th:if="${approvedClaims.isEmpty()}" style="text-align: center; padding: 32px;">
-                <p>No approved claims.</p>
-            </div>
-            <div th:each="claim : ${approvedClaims}" style="padding: 16px; border-bottom: 1px solid #e5e7eb;">
-                <div>
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <strong><a th:href="@{/item/{id}(id=${claim.item.id})}" th:text="${claim.item.title}" style="color: #333;"></a></strong>
-                        <span class="badge badge-approved">Approved</span>
+        
+        <div th:if="${#lists.isEmpty(claims)}" class="text-center py-16">
+            <i class="fas fa-clipboard-list text-gray-400 text-6xl mb-4"></i>
+            <p class="text-gray-500 text-lg">You haven't submitted any claims yet.</p>
+            <a href="/search" class="mt-4 inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">Browse Items to Claim ?</a>
+        </div>
+        
+        <div th:each="claim : ${claims}" class="border-b border-gray-200 last:border-0 hover:bg-gray-50 p-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-2">
+                        <h3 class="text-lg font-semibold">
+                            <a th:href="@{/item/{id}(id=${claim.item.id})}" class="hover:text-indigo-600" th:text="${claim.item.title}"></a>
+                        </h3>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                              th:class="${claim.status == 'APPROVED'} ? 'bg-green-100 text-green-800' : (${claim.status == 'REJECTED'} ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800')"
+                              th:text="${claim.status}"></span>
                     </div>
-                    <div style="font-size: 13px; color: #6b7280; margin-top: 4px;">
-                        <span th:text="${claim.item.location}"></span>
-                        <span style="margin: 0 8px;">•</span>
-                        Approved on: <span th:text="${claim.formattedReviewedAt}"></span>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
+                        <div><span class="text-gray-500">Item Type:</span> <span class="ml-2" th:text="${claim.item.type}"></span></div>
+                        <div><span class="text-gray-500">Location:</span> <span class="ml-2" th:text="${claim.item.location}"></span></div>
+                        <div><span class="text-gray-500">Submitted:</span> <span class="ml-2" th:text="${claim.submittedAt}"></span></div>
                     </div>
-                    <div class="alert alert-success" style="margin-top: 12px; padding: 12px;">
-                        <i class="fas fa-gift"></i> Ready for pickup! Visit the Campus Security Desk with your student ID.
+                    <div th:if="${claim.status == 'REJECTED' and claim.rejectionReason != null}" class="mt-3 p-3 bg-red-50 rounded-md">
+                        <p class="text-sm text-red-800"><strong>Rejection Reason:</strong> <span th:text="${claim.rejectionReason}"></span></p>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Rejected Claims -->
-    <div class="card">
-        <div class="card-header">Rejected Claims (<span th:text="${#lists.size(rejectedClaims)}"></span>)</div>
-        <div class="card-body">
-            <div th:if="${rejectedClaims.isEmpty()}" style="text-align: center; padding: 32px;">
-                <p>No rejected claims.</p>
-            </div>
-            <div th:each="claim : ${rejectedClaims}" style="padding: 16px; border-bottom: 1px solid #e5e7eb;">
-                <div>
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <strong><a th:href="@{/item/{id}(id=${claim.item.id})}" th:text="${claim.item.title}" style="color: #333;"></a></strong>
-                        <span class="badge badge-rejected">Rejected</span>
-                    </div>
-                    <div style="font-size: 13px; color: #6b7280; margin-top: 4px;">
-                        <span th:text="${claim.item.location}"></span>
-                        <span style="margin: 0 8px;">•</span>
-                        Reviewed on: <span th:text="${claim.formattedReviewedAt}"></span>
-                    </div>
-                    <div class="alert alert-danger" style="margin-top: 12px; padding: 12px;">
-                        <strong>Reason:</strong> <span th:text="${claim.rejectionReason}"></span>
-                    </div>
+                <div class="flex gap-2">
+                    <button @click="selectedClaim = claim; showDetailsModal = true" class="px-3 py-1.5 border rounded-md text-gray-700 hover:bg-gray-50 text-sm">
+                        <i class="fas fa-eye mr-1"></i> Details
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<footer style="text-align: center; padding: 32px; border-top: 1px solid #e5e7eb; margin-top: 32px;">
-    <p>© 2024 FindIt - Campus Lost & Found System | CST</p>
-</footer>
+<!-- Details Modal -->
+<div x-show="showDetailsModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
+    <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75" @click="showDetailsModal = false"></div>
+        <div class="relative bg-white rounded-lg max-w-lg w-full p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Claim Details</h3>
+            <div class="space-y-3">
+                <div><p class="text-sm font-medium text-gray-500">Item:</p><p class="text-sm" x-text="selectedClaim?.item?.title"></p></div>
+                <div><p class="text-sm font-medium text-gray-500">Status:</p><p class="text-sm" x-text="selectedClaim?.status"></p></div>
+                <div><p class="text-sm font-medium text-gray-500">Your Answers:</p><div class="mt-1 p-3 bg-gray-50 rounded-md"><p class="text-sm whitespace-pre-wrap" x-text="selectedClaim?.answers"></p></div></div>
+                <div><p class="text-sm font-medium text-gray-500">Submitted:</p><p class="text-sm" x-text="selectedClaim?.submittedAt"></p></div>
+            </div>
+            <div class="mt-6 flex justify-end">
+                <button @click="showDetailsModal = false" class="px-4 py-2 border rounded-md">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
 
 </body>
 </html>

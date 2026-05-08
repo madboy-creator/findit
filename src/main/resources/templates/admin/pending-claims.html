@@ -1,60 +1,78 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/header :: header"></head>
-<body>
+<head th:replace="~{fragments/layout :: common-head('Pending Claims')}"></head>
+<body x-data="{ showRejectModal: false, selectedClaimId: null, rejectReason: '' }">
 
-<div th:replace="fragments/header :: navbar"></div>
+<div th:replace="~{fragments/layout :: navbar}"></div>
 
-<div class="container" style="padding: 32px 24px;">
-    <h1>Pending Claims</h1>
+<div class="py-6 px-4">
+    <h1 class="text-2xl font-bold text-gray-900 mb-6">Pending Claims</h1>
     
-    <div class="card">
-        <div class="card-body">
-            <div th:if="${claims.isEmpty()}" style="text-align: center; padding: 48px;">
-                <p>No pending claims to review.</p>
-                <a href="/admin/dashboard" class="btn btn-primary">Back to Dashboard</a>
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+        <div th:if="${#lists.isEmpty(claims)}" class="p-8 text-center text-gray-500">
+            <p>No pending claims to review.</p>
+            <a href="/admin/dashboard" class="mt-4 inline-block text-indigo-600">Back to Dashboard</a>
+        </div>
+        
+        <div th:each="claim : ${claims}" class="border-b border-gray-200 p-6 hover:bg-gray-50">
+            <h3 class="text-xl font-semibold text-gray-900">Claim #<span th:text="${claim.id}"></span></h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-4">
+                <div>
+                    <h4 class="font-medium text-gray-700 mb-2">Item Information</h4>
+                    <p><strong>Title:</strong> <span th:text="${claim.item.title}"></span></p>
+                    <p><strong>Category:</strong> <span th:text="${claim.item.category}"></span></p>
+                    <p><strong>Location:</strong> <span th:text="${claim.item.location}"></span></p>
+                    <p><strong>Type:</strong> <span th:text="${claim.item.type}"></span></p>
+                </div>
+                <div>
+                    <h4 class="font-medium text-gray-700 mb-2">Claimant Information</h4>
+                    <p><strong>Name:</strong> <span th:text="${claim.claimant.name}"></span></p>
+                    <p><strong>Email:</strong> <span th:text="${claim.claimant.email}"></span></p>
+                    <p><strong>Student ID:</strong> <span th:text="${claim.claimant.studentId}"></span></p>
+                    <p><strong>Phone:</strong> <span th:text="${claim.claimant.phone}"></span></p>
+                </div>
             </div>
             
-            <div th:each="claim : ${claims}" style="padding: 24px; border-bottom: 1px solid #e5e7eb;">
-                <h3>Claim #<span th:text="${claim.id}"></span></h3>
-                
-                <div class="row" style="margin-bottom: 20px;">
-                    <div class="col-6">
-                        <h4>Item Information</h4>
-                        <p><strong>Title:</strong> <span th:text="${claim.item.title}"></span></p>
-                        <p><strong>Category:</strong> <span th:text="${claim.item.category}"></span></p>
-                        <p><strong>Location:</strong> <span th:text="${claim.item.location}"></span></p>
-                    </div>
-                    <div class="col-6">
-                        <h4>Claimant Information</h4>
-                        <p><strong>Name:</strong> <span th:text="${claim.claimant.name}"></span></p>
-                        <p><strong>Email:</strong> <span th:text="${claim.claimant.email}"></span></p>
-                        <p><strong>Student ID:</strong> <span th:text="${claim.claimant.studentId}"></span></p>
-                    </div>
-                </div>
-                
-                <div style="background: #f9fafb; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
-                    <h4>Verification Answers</h4>
-                    <p th:text="${claim.answers}" style="white-space: pre-wrap;"></p>
-                </div>
-                
-                <div style="display: flex; gap: 12px; justify-content: flex-end;">
-                    <form method="post" th:action="@{/admin/claim/{id}/approve(id=${claim.id})}">
-                        <button type="submit" class="btn btn-success">Approve Claim</button>
-                    </form>
-                    <form method="post" th:action="@{/admin/claim/{id}/reject(id=${claim.id})}">
-                        <input type="text" name="reason" placeholder="Reason for rejection" required style="padding: 8px; margin-right: 8px;">
-                        <button type="submit" class="btn btn-danger">Reject</button>
-                    </form>
-                </div>
+            <div class="bg-gray-50 p-4 rounded-lg my-4">
+                <h4 class="font-medium text-gray-700 mb-2">Verification Answers</h4>
+                <p class="whitespace-pre-wrap" th:text="${claim.answers}"></p>
+            </div>
+            
+            <div class="flex gap-3 justify-end mt-4">
+                <form method="post" th:action="@{/admin/claim/{id}/approve(id=${claim.id})}">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
+                        <i class="fas fa-check mr-1"></i> Approve Claim
+                    </button>
+                </form>
+                <button @click="selectedClaimId = claim.id; showRejectModal = true" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700">
+                    <i class="fas fa-times mr-1"></i> Reject Claim
+                </button>
             </div>
         </div>
     </div>
 </div>
 
-<footer style="text-align: center; padding: 32px; border-top: 1px solid #e5e7eb; margin-top: 32px;">
-    <p>© 2024 FindIt - Campus Lost & Found System | CST</p>
-</footer>
+<!-- Reject Modal -->
+<div x-show="showRejectModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
+    <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75" @click="showRejectModal = false"></div>
+        <div class="relative bg-white rounded-lg max-w-md w-full p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Reject Claim</h3>
+            <form method="post" th:action="@{/admin/claim/{id}/reject(id=${selectedClaimId})}">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <textarea name="reason" x-model="rejectReason" rows="3" required placeholder="Reason for rejection..." class="w-full border rounded-md p-2"></textarea>
+                <div class="mt-4 flex justify-end gap-2">
+                    <button type="button" @click="showRejectModal = false" class="px-4 py-2 border rounded-md">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Reject</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
 
 </body>
 </html>

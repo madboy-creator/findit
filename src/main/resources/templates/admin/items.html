@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: common-head('Admin - ' + ${pageTitle})}"></head>
+<body>
+<div th:replace="~{fragments/layout :: navbar}"></div>
+<div class="py-6 px-4">
+    <h1 class="text-2xl font-bold text-gray-900 mb-6" th:text="${pageTitle}">Items</h1>
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr><th class="px-6 py-3 text-left">Title</th><th>Category</th><th>Location</th><th>Type</th><th>Status</th><th>Reporter</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                <tr th:each="item : ${items}" class="border-b hover:bg-gray-50">
+                    <td class="px-6 py-4" th:text="${item.title}"></td>
+                    <td class="px-6 py-4" th:text="${item.category}"></td>
+                    <td class="px-6 py-4" th:text="${item.location}"></td>
+                    <td class="px-6 py-4"><span th:class="${item.type == 'FOUND'} ? 'text-green-600' : 'text-red-600'" th:text="${item.type}"></span></td>
+                    <td class="px-6 py-4" th:text="${item.status}"></td>
+                    <td class="px-6 py-4" th:text="${item.reporter.name}"></td>
+                    <td class="px-6 py-4"><a th:href="@{/item/{id}(id=${item.id})}" class="text-blue-600">View</a></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(items)}"><td colspan="7" class="text-center py-8 text-gray-500">No items found</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

@@ -4,93 +4,98 @@ import com.findit.entity.Claim;
 import com.findit.entity.Item;
 import com.findit.entity.User;
 import com.findit.repository.ClaimRepository;
-import com.findit.repository.ItemRepository;
+import com.findit.exception.ResourceNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
+import java.util.ArrayList;
 
 @Service
+@Transactional
 public class ClaimService {
-
+    
+    private static final Logger logger = LoggerFactory.getLogger(ClaimService.class);
+    
     private final ClaimRepository claimRepository;
-    private final ItemRepository itemRepository;
-
-    public ClaimService(ClaimRepository claimRepository, ItemRepository itemRepository) {
+    private final ItemService itemService;
+    private final UserService userService;
+    
+    public ClaimService(ClaimRepository claimRepository, ItemService itemService, UserService userService) {
         this.claimRepository = claimRepository;
-        this.itemRepository = itemRepository;
+        this.itemService = itemService;
+        this.userService = userService;
     }
-
+    
     @Transactional
-    public Claim submitClaim(Item item, User claimant, String answers) {
-        if (claimRepository.existsByItemAndClaimant(item, claimant)) {
-            throw new RuntimeException("You have already submitted a claim for this item");
+    public Claim submitClaim(Long itemId, String answers, String userEmail) {
+        Item item = itemService.findById(itemId);
+        User claimant = userService.findByEmail(userEmail);
+        
+        if ("CLAIMED".equals(item.getStatus())) {
+            throw new IllegalStateException("This item has already been claimed");
         }
-
+        
+        if (claimRepository.existsByItemAndClaimant(item, claimant)) {
+            throw new IllegalStateException("You have already submitted a claim for this item");
+        }
+        
         Claim claim = new Claim();
         claim.setItem(item);
         claim.setClaimant(claimant);
         claim.setAnswers(answers);
         claim.setStatus("PENDING");
-
-        return claimRepository.save(claim);
+        claim.setSubmittedAt(LocalDateTime.now());
+        
+        Claim savedClaim = claimRepository.save(claim);
+        logger.info("New claim submitted for item {} by {}", itemId, userEmail);
+        return savedClaim;
     }
-
-    @Transactional
-    public Claim approveClaim(Long claimId, User admin) {
-        Claim claim = claimRepository.findById(Objects.requireNonNull(claimId, "claimId must not be null"))
-                .orElseThrow(() -> new RuntimeException("Claim not found with id: " + claimId));
-
-        claim.setStatus("APPROVED");
-        claim.setReviewedBy(admin);
-        claim.setReviewedAt(LocalDateTime.now());
-
-        Item item = claim.getItem();
-        if (item != null) {
-            item.setStatus("CLAIMED");
-            itemRepository.save(item);
-        }
-
-        return claimRepository.save(claim);
+    
+    public List<Claim> getClaimsByUser(String userEmail) {
+        User user = userService.findByEmail(userEmail);
+        List<Claim> claims = claimRepository.findByClaimantOrderBySubmittedAtDesc(user);
+        return claims == null ? new ArrayList<>() : claims;
     }
-
-    @Transactional
-    public Claim rejectClaim(Long claimId, User admin, String reason) {
-        Claim claim = claimRepository.findById(Objects.requireNonNull(claimId, "claimId must not be null"))
-                .orElseThrow(() -> new RuntimeException("Claim not found with id: " + claimId));
-
-        claim.setStatus("REJECTED");
-        claim.setReviewedBy(admin);
-        claim.setReviewedAt(LocalDateTime.now());
-        claim.setRejectionReason(reason);
-
-        return claimRepository.save(claim);
-    }
-
+    
     public List<Claim> getPendingClaims() {
-        return claimRepository.findByStatusOrderByCreatedAtAsc("PENDING");
+        return claimRepository.findByStatusOrderBySubmittedAtAsc("PENDING");
     }
-
-    public List<Claim> getUserClaims(User user) {
-        return claimRepository.findByClaimant(user);
+    
+    public Claim findById(Long id) {
+        return claimRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Claim not found with id: " + id));
     }
-
-    public Claim getClaimById(Long id) {
-        return claimRepository.findById(Objects.requireNonNull(id, "id must not be null"))
-                .orElseThrow(() -> new RuntimeException("Claim not found with id: " + id));
+    
+    @Transactional
+    public void approveClaim(Long claimId, String adminEmail) {
+        Claim claim = findById(claimId);
+        claim.setStatus("APPROVED");
+        claim.setReviewedBy(adminEmail);
+        claim.setReviewedAt(LocalDateTime.now());
+        claimRepository.save(claim);
+        itemService.markAsClaimed(claim.getItem().getId());
+        logger.info("Claim {} approved by admin {}", claimId, adminEmail);
     }
-
+    
+    @Transactional
+    public void rejectClaim(Long claimId, String reason, String adminEmail) {
+        Claim claim = findById(claimId);
+        claim.setStatus("REJECTED");
+        claim.setRejectionReason(reason);
+        claim.setReviewedBy(adminEmail);
+        claim.setReviewedAt(LocalDateTime.now());
+        claimRepository.save(claim);
+        logger.info("Claim {} rejected by admin {}: {}", claimId, adminEmail, reason);
+    }
+    
     public long getPendingClaimsCount() {
         return claimRepository.countByStatus("PENDING");
     }
-
-    public long getApprovedClaimsCount() {
-        return claimRepository.countByStatus("APPROVED");
-    }
-
-    public long getRejectedClaimsCount() {
-        return claimRepository.countByStatus("REJECTED");
+    
+    public List<Claim> getAllClaims() {
+        return claimRepository.findAllByOrderBySubmittedAtDesc();
     }
 }

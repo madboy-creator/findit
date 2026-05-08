@@ -1,70 +1,92 @@
 package com.findit.controller;
 
+import com.findit.exception.DuplicateResourceException;
 import com.findit.service.UserService;
-import org.springframework.security.core.Authentication;
+import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 public class AuthController {
-
+    
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+    
     private final UserService userService;
-
+    
     public AuthController(UserService userService) {
         this.userService = userService;
     }
-
-    @GetMapping("/")
-    public String home(Authentication authentication) {
-        // Redirect already-logged-in users away from the homepage
-        if (authentication != null && authentication.isAuthenticated()) {
-            return "redirect:/dashboard";
-        }
-        return "index";
-    }
-
+    
     @GetMapping("/login")
-    public String login(Authentication authentication,
-                        @RequestParam(required = false) String error,
-                        @RequestParam(required = false) String logout,
-                        Model model) {
-        // Redirect already-logged-in users
-        if (authentication != null && authentication.isAuthenticated()) {
-            return "redirect:/dashboard";
-        }
+    public String loginPage(@RequestParam(value = "error", required = false) String error,
+                           @RequestParam(value = "logout", required = false) String logout,
+                           @RequestParam(value = "expired", required = false) String expired,
+                           Model model) {
         if (error != null) {
-            model.addAttribute("error", "Invalid email or password. Please try again.");
+            model.addAttribute("error", "Invalid email or password");
         }
         if (logout != null) {
-            model.addAttribute("message", "You have been logged out successfully.");
+            model.addAttribute("message", "You have been logged out successfully");
+        }
+        if (expired != null) {
+            model.addAttribute("error", "Your session has expired");
         }
         return "auth/login";
     }
-
+    
     @GetMapping("/register")
-    public String register(Authentication authentication) {
-        if (authentication != null && authentication.isAuthenticated()) {
-            return "redirect:/dashboard";
-        }
+    public String registerPage(Model model) {
+        model.addAttribute("user", new UserRegistrationDto());
         return "auth/register";
     }
-
+    
     @PostMapping("/register")
-    public String registerUser(@RequestParam String name,
-                               @RequestParam String email,
-                               @RequestParam String password,
-                               @RequestParam String studentId,
-                               @RequestParam String phone,
-                               Model model) {
+    public String registerUser(@Valid @ModelAttribute("user") UserRegistrationDto registrationDto,
+                              RedirectAttributes redirectAttributes) {
         try {
-            userService.registerUser(name, email, password, studentId, phone);
+            userService.registerUser(
+                registrationDto.getName(),
+                registrationDto.getEmail(),
+                registrationDto.getPassword(),
+                registrationDto.getStudentId(),
+                registrationDto.getPhone()
+            );
+            redirectAttributes.addFlashAttribute("success", "Registration successful! Please login.");
             return "redirect:/login?registered=true";
-        } catch (Exception e) {
-            model.addAttribute("error", e.getMessage());
-            return "auth/register";
+        } catch (DuplicateResourceException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/register";
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/register";
         }
+    }
+    
+    @GetMapping("/logout-success")
+    public String logoutSuccess() {
+        return "redirect:/login?logout=true";
+    }
+    
+    static class UserRegistrationDto {
+        private String name;
+        private String email;
+        private String password;
+        private String studentId;
+        private String phone;
+        
+        public String getName() { return name; }
+        public void setName(String name) { this.name = name; }
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+        public String getPassword() { return password; }
+        public void setPassword(String password) { this.password = password; }
+        public String getStudentId() { return studentId; }
+        public void setStudentId(String studentId) { this.studentId = studentId; }
+        public String getPhone() { return phone; }
+        public void setPhone(String phone) { this.phone = phone; }
     }
 }

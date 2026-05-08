@@ -1,364 +1,83 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/header :: header"></head>
+<head th:replace="~{fragments/layout :: common-head('My Dashboard')}"></head>
 <body>
 
-<div th:replace="fragments/header :: navbar"></div>
+<div th:replace="~{fragments/layout :: navbar}"></div>
 
-<div class="dashboard-container">
-    
+<div class="py-6 px-4">
     <!-- Welcome Banner -->
-    <div class="welcome-banner">
-        <h1>Welcome back, <span th:text="${userName}">Student</span>!</h1>
-        <p>Help keep our campus organized - Report lost or found items today.</p>
+    <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 mb-8 text-white">
+        <h1 class="text-2xl font-bold mb-2" th:text="'Welcome, ' + ${userName} + '!'">Welcome!</h1>
+        <p>Report lost or found items, track your claims, and recover your belongings.</p>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="actions-grid">
-        <div class="action-card lost-card">
-            <div class="action-icon">🔍</div>
-            <h3>Lost Something?</h3>
-            <p>Check if someone found your belongings</p>
-            <a href="/search?lost=false" class="btn-action">Browse Found Items →</a>
-        </div>
-        <div class="action-card found-card">
-            <div class="action-icon">📦</div>
-            <h3>Found Something?</h3>
-            <p>Help someone recover their belonging</p>
-            <a href="/report-found" class="btn-action">Report Found Item →</a>
-        </div>
-    </div>
-
-    <!-- Stats Row -->
-    <div class="stats-grid">
-        <div class="stat-box">
-            <div class="stat-number" th:text="${myFoundItemsCount}">0</div>
-            <div class="stat-label">Items Found</div>
-        </div>
-        <div class="stat-box">
-            <div class="stat-number" th:text="${myLostItemsCount}">0</div>
-            <div class="stat-label">Items Lost</div>
-        </div>
-        <div class="stat-box">
-            <div class="stat-number" th:text="${myClaimsCount}">0</div>
-            <div class="stat-label">Claims Submitted</div>
-        </div>
-    </div>
-
-    <!-- Recent Items Section -->
-    <div class="recent-section">
-        <div class="section-half">
-            <div class="section-header">
-                <h2>📦 Recently Found</h2>
-                <a href="/search?lost=false" class="view-all">View all →</a>
-            </div>
-            <div th:if="${#lists.isEmpty(recentFoundItems)}" class="empty-state">
-                <p>No found items reported yet.</p>
-                <a href="/report-found" class="btn-small">Report an item</a>
-            </div>
-            <div th:each="item : ${recentFoundItems}" class="item-row">
-                <div class="item-info">
-                    <a th:href="@{/item/{id}(id=${item.id})}" th:text="${item.title}" class="item-title"></a>
-                    <div class="item-meta">
-                        <span>📍 <span th:text="${item.location}"></span></span>
-                        <span>📅 <span th:text="${item.formattedCreatedAt}"></span></span>
-                    </div>
-                </div>
-                <a th:href="@{/item/{id}(id=${item.id})}" class="btn-view">View</a>
-            </div>
-        </div>
-
-        <div class="section-half">
-            <div class="section-header">
-                <h2>⚠️ Recently Lost</h2>
-                <a href="/search?lost=true" class="view-all">View all →</a>
-            </div>
-            <div th:if="${#lists.isEmpty(recentLostItems)}" class="empty-state">
-                <p>No lost items reported yet.</p>
-                <a href="/report-lost" class="btn-small">Report a lost item</a>
-            </div>
-            <div th:each="item : ${recentLostItems}" class="item-row">
-                <div class="item-info">
-                    <a th:href="@{/item/{id}(id=${item.id})}" th:text="${item.title}" class="item-title"></a>
-                    <div class="item-meta">
-                        <span>📍 <span th:text="${item.location}"></span></span>
-                        <span>📅 <span th:text="${item.formattedCreatedAt}"></span></span>
-                    </div>
-                </div>
-                <a th:href="@{/item/{id}(id=${item.id})}" class="btn-view">View</a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Quick Links -->
-    <div class="quick-links-grid">
-        <a href="/my-items" class="quick-link">
-            <span>📋</span>
-            <div>
-                <strong>My Reported Items</strong>
-                <small>Track all items you've reported</small>
-            </div>
+    <!-- Quick Actions (Student Only) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        <a href="/report-lost" class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition text-center">
+            <i class="fas fa-search-minus text-red-500 text-4xl mb-2"></i>
+            <h3 class="font-bold text-lg">I Lost Something</h3>
+            <p class="text-gray-600 text-sm">Report an item you've lost</p>
         </a>
-        <a href="/my-claims" class="quick-link">
-            <span>📄</span>
-            <div>
-                <strong>My Claims</strong>
-                <small>Track your claim requests</small>
-            </div>
+        <a href="/report-found" class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition text-center">
+            <i class="fas fa-search-plus text-green-500 text-4xl mb-2"></i>
+            <h3 class="font-bold text-lg">I Found Something</h3>
+            <p class="text-gray-600 text-sm">Report an item you've found</p>
         </a>
+    </div>
+
+    <!-- My Recent Items (Student Only) -->
+    <div class="bg-white shadow rounded-lg p-6 mb-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-gray-800">My Recent Items</h2>
+            <a href="/my-items" class="text-blue-600 hover:underline text-sm">View All ?</a>
+        </div>
+        <div class="space-y-3">
+            <div th:each="item : ${myItems}" class="border rounded-lg p-3 flex justify-between items-center">
+                <div>
+                    <span class="font-medium" th:text="${item.title}"></span>
+                    <span class="text-xs ml-2 px-2 py-1 rounded-full" 
+                          th:class="${item.type == 'FOUND'} ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                          th:text="${item.type}"></span>
+                    <p class="text-sm text-gray-500" th:text="${item.location}"></p>
+                </div>
+                <a th:href="@{/item/{id}(id=${item.id})}" class="text-blue-600 text-sm">View ?</a>
+            </div>
+            <div th:if="${#lists.isEmpty(myItems)}" class="text-center text-gray-500 py-4">
+                You haven't reported any items yet.
+                <a href="/report-lost" class="text-blue-600 ml-1">Report one now ?</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Claims (Student Only) -->
+    <div class="bg-white shadow rounded-lg p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-gray-800">My Claims</h2>
+            <a href="/my-claims" class="text-blue-600 hover:underline text-sm">View All ?</a>
+        </div>
+        <div class="space-y-3">
+            <div th:each="claim : ${myClaims}" class="border rounded-lg p-3">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span class="font-medium" th:text="${claim.item.title}"></span>
+                        <span class="text-xs ml-2 px-2 py-1 rounded-full" 
+                              th:class="${claim.status == 'APPROVED'} ? 'bg-green-100 text-green-800' : (${claim.status == 'REJECTED'} ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800')"
+                              th:text="${claim.status}"></span>
+                        <p class="text-sm text-gray-500" th:text="'Submitted: ' + ${claim.submittedAt}"></p>
+                    </div>
+                    <button onclick="viewClaimDetails(${claim.id})" class="text-blue-600 text-sm">Details ?</button>
+                </div>
+            </div>
+            <div th:if="${#lists.isEmpty(myClaims)}" class="text-center text-gray-500 py-4">
+                You haven't submitted any claims yet.
+                <a href="/search" class="text-blue-600 ml-1">Search for items ?</a>
+            </div>
+        </div>
     </div>
 </div>
 
-<style>
-    .dashboard-container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 24px;
-    }
-
-    .welcome-banner {
-        background: linear-gradient(135deg, #0066CC 0%, #00CCFF 100%);
-        border-radius: 16px;
-        padding: 32px;
-        color: white;
-        margin-bottom: 32px;
-    }
-
-    .welcome-banner h1 {
-        margin: 0 0 8px 0;
-        font-size: 28px;
-        color: white;
-    }
-
-    .welcome-banner p {
-        margin: 0;
-        opacity: 0.9;
-    }
-
-    .actions-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 24px;
-        margin-bottom: 32px;
-    }
-
-    .action-card {
-        background: white;
-        border-radius: 16px;
-        padding: 24px;
-        text-align: center;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-
-    .action-icon {
-        font-size: 48px;
-        margin-bottom: 12px;
-    }
-
-    .action-card h3 {
-        margin: 0 0 8px 0;
-        font-size: 20px;
-    }
-
-    .action-card p {
-        color: #6b7280;
-        margin-bottom: 16px;
-        font-size: 14px;
-    }
-
-    .btn-action {
-        display: inline-block;
-        background: #0066CC;
-        color: white;
-        padding: 10px 20px;
-        border-radius: 8px;
-        text-decoration: none;
-        font-size: 14px;
-        font-weight: 500;
-    }
-
-    .btn-action:hover {
-        background: #0052a3;
-    }
-
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
-        margin-bottom: 32px;
-    }
-
-    .stat-box {
-        background: white;
-        border-radius: 12px;
-        padding: 20px;
-        text-align: center;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-    }
-
-    .stat-number {
-        font-size: 32px;
-        font-weight: bold;
-        color: #0066CC;
-    }
-
-    .stat-label {
-        color: #6b7280;
-        font-size: 13px;
-        margin-top: 4px;
-    }
-
-    .recent-section {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 24px;
-        margin-bottom: 32px;
-    }
-
-    .section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 16px;
-    }
-
-    .section-header h2 {
-        margin: 0;
-        font-size: 18px;
-    }
-
-    .view-all {
-        color: #0066CC;
-        text-decoration: none;
-        font-size: 13px;
-    }
-
-    .item-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 12px 0;
-        border-bottom: 1px solid #e5e7eb;
-    }
-
-    .item-title {
-        font-weight: 500;
-        color: #1f2937;
-        text-decoration: none;
-    }
-
-    .item-title:hover {
-        color: #0066CC;
-    }
-
-    .item-meta {
-        font-size: 12px;
-        color: #6b7280;
-        margin-top: 4px;
-        display: flex;
-        gap: 12px;
-    }
-
-    .btn-view {
-        background: none;
-        color: #0066CC;
-        text-decoration: none;
-        font-size: 13px;
-        font-weight: 500;
-    }
-
-    .empty-state {
-        text-align: center;
-        padding: 32px;
-        background: #f9fafb;
-        border-radius: 12px;
-        color: #6b7280;
-    }
-
-    .btn-small {
-        display: inline-block;
-        margin-top: 12px;
-        background: #0066CC;
-        color: white;
-        padding: 6px 12px;
-        border-radius: 6px;
-        text-decoration: none;
-        font-size: 12px;
-    }
-
-    .quick-links-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-    }
-
-    .quick-link {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        background: white;
-        border-radius: 12px;
-        padding: 16px;
-        text-decoration: none;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-        transition: transform 0.2s;
-    }
-
-    .quick-link:hover {
-        transform: translateY(-2px);
-    }
-
-    .quick-link span {
-        font-size: 28px;
-    }
-
-    .quick-link strong {
-        display: block;
-        color: #1f2937;
-        font-size: 14px;
-    }
-
-    .quick-link small {
-        color: #6b7280;
-        font-size: 12px;
-    }
-
-    @media (max-width: 768px) {
-        .dashboard-container {
-            padding: 16px;
-        }
-        
-        .actions-grid {
-            grid-template-columns: 1fr;
-            gap: 16px;
-        }
-        
-        .recent-section {
-            grid-template-columns: 1fr;
-            gap: 24px;
-        }
-        
-        .stats-grid {
-            gap: 12px;
-        }
-        
-        .stat-number {
-            font-size: 24px;
-        }
-        
-        .welcome-banner {
-            padding: 20px;
-        }
-        
-        .welcome-banner h1 {
-            font-size: 22px;
-        }
-    }
-</style>
-
-<footer style="text-align: center; padding: 24px; border-top: 1px solid #e5e7eb; margin-top: 32px;">
-    <p style="margin: 0; font-size: 13px; color: #6b7280;">© 2024 FindIt - Campus Lost & Found System | CST</p>
-</footer>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
 
 </body>
 </html>

@@ -1,20 +1,20 @@
 package com.findit.controller;
 
 import com.findit.entity.Item;
-import com.findit.entity.User;
 import com.findit.service.ClaimService;
 import com.findit.service.ItemService;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Controller
 public class ClaimController {
     
+    private static final Logger logger = LoggerFactory.getLogger(ClaimController.class);
     private final ClaimService claimService;
     private final ItemService itemService;
     
@@ -23,46 +23,39 @@ public class ClaimController {
         this.itemService = itemService;
     }
     
-    @GetMapping("/claim/{itemId}")
-    public String submitClaimPage(@PathVariable Long itemId, Model model) {
-        Item item = itemService.getItemById(itemId);
-        if ("CLAIMED".equals(item.getStatus()) || "RESOLVED".equals(item.getStatus())) {
-            return "redirect:/item/" + itemId + "?error=Item already claimed";
-        }
-        model.addAttribute("item", item);
-        return "claims/submit-claim";
-    }
-    
-    @PostMapping("/claim/{itemId}")
-    public String submitClaim(@PathVariable Long itemId, @RequestParam String answers,
-                              @AuthenticationPrincipal User claimant, RedirectAttributes ra) {
-        try {
-            Item item = itemService.getItemById(itemId);
-            claimService.submitClaim(item, claimant, answers);
-            ra.addFlashAttribute("success", "Claim submitted! Admin will review.");
-        } catch (Exception e) {
-            ra.addFlashAttribute("error", e.getMessage());
-        }
-        return "redirect:/dashboard";
-    }
-    
     @GetMapping("/my-claims")
-    public String myClaims(@AuthenticationPrincipal User user, Model model) {
-        List<com.findit.entity.Claim> allClaims = claimService.getUserClaims(user);
-        
-        List<com.findit.entity.Claim> pendingClaims = allClaims.stream()
-                .filter(c -> "PENDING".equals(c.getStatus()))
-                .collect(Collectors.toList());
-        List<com.findit.entity.Claim> approvedClaims = allClaims.stream()
-                .filter(c -> "APPROVED".equals(c.getStatus()))
-                .collect(Collectors.toList());
-        List<com.findit.entity.Claim> rejectedClaims = allClaims.stream()
-                .filter(c -> "REJECTED".equals(c.getStatus()))
-                .collect(Collectors.toList());
-        
-        model.addAttribute("pendingClaims", pendingClaims);
-        model.addAttribute("approvedClaims", approvedClaims);
-        model.addAttribute("rejectedClaims", rejectedClaims);
+    public String myClaims(Model model, Authentication authentication) {
+        model.addAttribute("claims", claimService.getClaimsByUser(authentication.getName()));
+        logger.debug("User {} viewed their claims", authentication.getName());
         return "claims/my-claims";
+    }
+    
+    @GetMapping("/claim/submit/{id}")
+    public String showClaimForm(@PathVariable Long id, Model model) {
+        try {
+            Item item = itemService.findById(id);
+            model.addAttribute("item", item);
+            return "claims/submit-claim";
+        } catch (Exception e) {
+            logger.error("Failed to load claim form for item {}: {}", id, e.getMessage());
+            return "redirect:/item/" + id;
+        }
+    }
+    
+    @PostMapping("/claim/submit/{id}")
+    public String submitClaim(@PathVariable Long id,
+                             @RequestParam String answers,
+                             Authentication authentication,
+                             RedirectAttributes redirectAttributes) {
+        try {
+            claimService.submitClaim(id, answers, authentication.getName());
+            redirectAttributes.addFlashAttribute("success", "Claim submitted successfully! Awaiting admin review.");
+            logger.info("Claim submitted for item {} by user {}", id, authentication.getName());
+            return "redirect:/my-claims";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to submit claim: " + e.getMessage());
+            logger.error("Claim submission failed for item {}: {}", id, e.getMessage());
+            return "redirect:/item/" + id;
+        }
     }
 }

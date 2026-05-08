@@ -1,55 +1,61 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/header :: header"></head>
-<body>
+<head th:replace="~{fragments/layout :: common-head('Submit Claim')}"></head>
+<body x-data="{ answers: '', charCount: 0 }">
 
-<div th:replace="fragments/header :: navbar"></div>
+<div th:replace="~{fragments/layout :: navbar}"></div>
 
-<div class="container" style="padding: 32px 24px; max-width: 800px;">
-    <div class="card">
-        <div class="card-header">Claim This Item</div>
-        <div class="card-body">
-            <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
-            
-            <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
-                <h3>Item You're Claiming</h3>
-                <p><strong>Title:</strong> <span th:text="${item.title}"></span></p>
-                <p><strong>Category:</strong> <span th:text="${item.categoryIcon}"></span> <span th:text="${item.category}"></span></p>
-                <p><strong>Location Found:</strong> <span th:text="${item.location}"></span></p>
-                <p><strong>Description:</strong> <span th:text="${item.description}"></span></p>
+<div class="py-6 max-w-3xl mx-auto px-4">
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+        <div class="px-6 py-5 bg-gradient-to-r from-indigo-600 to-purple-600">
+            <h2 class="text-2xl font-bold text-white">Submit a Claim</h2>
+            <p class="text-indigo-100 mt-1" th:text="'For item: ' + ${item.title}"></p>
+        </div>
+        
+        <div class="p-6">
+            <div class="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div class="flex items-start">
+                    <i class="fas fa-info-circle text-blue-400 mt-0.5 mr-2"></i>
+                    <div>
+                        <h3 class="text-sm font-medium text-blue-800">Verification Required</h3>
+                        <p class="text-sm text-blue-700 mt-1">Please provide details that prove this item belongs to you. Be specific about unique markings, serial numbers, or other identifying features.</p>
+                    </div>
+                </div>
             </div>
             
-            <form method="post" th:action="@{/claim/{id}(id=${item.id})}">
-                <div class="form-group">
-                    <label class="form-label">Verification Answers</label>
-                    <textarea name="answers" class="form-control" rows="8" required placeholder="Please answer these questions to verify ownership:
-
-1. What color is this item?
-2. Are there any unique markings, stickers, or scratches?
-3. What brand/model is it?
-4. When and where did you lose it?
-5. Any additional details that only the owner would know?"></textarea>
-                    <div style="font-size: 12px; color: #6b7280; margin-top: 8px;">
-                        Your answers will be reviewed by an admin before approval.
+            <form method="post" th:action="@{/claim/submit/{id}(id=${item.id})}">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Verification Details <span class="text-red-500">*</span></label>
+                    <textarea name="answers" rows="6" required x-model="answers" @input="charCount = answers.length" class="w-full border rounded-md p-3" placeholder="Example: My name is engraved on the back, it has a specific scratch on the left corner, the serial number is XYZ123..."></textarea>
+                    <div class="mt-2 flex justify-between text-sm">
+                        <span class="text-gray-500">Minimum 20 characters</span>
+                        <span :class="charCount >= 20 ? 'text-green-600' : 'text-red-500'" x-text="charCount + ' characters'"></span>
                     </div>
                 </div>
                 
-                <div class="alert alert-warning">
-                    <i class="fas fa-gavel"></i> False claims are a violation of campus policy. Only submit a claim if this item truly belongs to you.
-                </div>
-                
-                <div style="display: flex; gap: 16px;">
-                    <button type="submit" class="btn btn-primary">Submit Claim</button>
-                    <a th:href="@{/item/{id}(id=${item.id})}" class="btn btn-outline">Cancel</a>
+                <div class="flex gap-3">
+                    <button type="submit" class="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
+                        <i class="fas fa-paper-plane mr-2"></i> Submit Claim
+                    </button>
+                    <a th:href="@{/item/{id}(id=${item.id})}" class="flex-1 border border-gray-300 text-center px-4 py-2 rounded-md hover:bg-gray-50">Cancel</a>
                 </div>
             </form>
+            
+            <div class="mt-6 pt-6 border-t border-gray-200">
+                <h4 class="text-sm font-medium text-gray-900 mb-2">Tips for a successful claim:</h4>
+                <ul class="text-sm text-gray-600 space-y-1 list-disc list-inside">
+                    <li>Include specific details only the owner would know (serial numbers, engravings, unique marks)</li>
+                    <li>Mention when and where you lost the item</li>
+                    <li>Describe any accessories or packaging that came with the item</li>
+                </ul>
+            </div>
         </div>
     </div>
 </div>
 
-<footer style="text-align: center; padding: 32px; border-top: 1px solid #e5e7eb; margin-top: 32px;">
-    <p>© 2024 FindIt - Campus Lost & Found System | CST</p>
-</footer>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
 
 </body>
 </html>

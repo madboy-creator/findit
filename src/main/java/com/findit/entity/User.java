@@ -1,108 +1,70 @@
 package com.findit.entity;
 
 import jakarta.persistence.*;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "users")
-public class User implements UserDetails {
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class User {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
-    @Column(nullable = false)
     private String name;
-    
-    @Column(unique = true, nullable = false)
     private String email;
-    
-    @Column(nullable = false)
     private String password;
-    
-    @Column(name = "student_id", unique = true, nullable = false)
     private String studentId;
-    
-    @Column(nullable = false)
-    private String role = "STUDENT";
-    
     private String phone;
-    
-    @Column(name = "created_at")
+    private String role = "STUDENT";
+    private Boolean enabled = true;
+    private Boolean accountNonLocked = true;
+    private Integer failedAttempts = 0;
+    private LocalDateTime lockTime;
+    private LocalDateTime lastLogin;
     private LocalDateTime createdAt;
-    
-    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
-    private boolean enabled = true;
+    @OneToMany(mappedBy = "reporter")
+    private List<Item> items = new ArrayList<>();
     
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
+    @OneToMany(mappedBy = "claimant")
+    private List<Claim> claims = new ArrayList<>();
     
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
+    public User() {}
     
-    // Getters and Setters
+    // Getters
     public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    
     public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    
     public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-    
     public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
-    
     public String getStudentId() { return studentId; }
-    public void setStudentId(String studentId) { this.studentId = studentId; }
-    
-    public String getRole() { return role; }
-    public void setRole(String role) { this.role = role; }
-    
     public String getPhone() { return phone; }
-    public void setPhone(String phone) { this.phone = phone; }
-    
+    public String getRole() { return role; }
+    public Boolean getEnabled() { return enabled; }
+    public Boolean getAccountNonLocked() { return accountNonLocked; }
+    public Integer getFailedAttempts() { return failedAttempts; }
+    public LocalDateTime getLockTime() { return lockTime; }
+    public LocalDateTime getLastLogin() { return lastLogin; }
     public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-    
     public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public List<Item> getItems() { return items; }
+    public List<Claim> getClaims() { return claims; }
+    
+    // Setters
+    public void setId(Long id) { this.id = id; }
+    public void setName(String name) { this.name = name; }
+    public void setEmail(String email) { this.email = email; }
+    public void setPassword(String password) { this.password = password; }
+    public void setStudentId(String studentId) { this.studentId = studentId; }
+    public void setPhone(String phone) { this.phone = phone; }
+    public void setRole(String role) { this.role = role; }
+    public void setEnabled(Boolean enabled) { this.enabled = enabled; }
+    public void setAccountNonLocked(Boolean accountNonLocked) { this.accountNonLocked = accountNonLocked; }
+    public void setFailedAttempts(Integer failedAttempts) { this.failedAttempts = failedAttempts; }
+    public void setLockTime(LocalDateTime lockTime) { this.lockTime = lockTime; }
+    public void setLastLogin(LocalDateTime lastLogin) { this.lastLogin = lastLogin; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
-    
-    public boolean isEnabled() { return enabled; }
-    public void setEnabled(boolean enabled) { this.enabled = enabled; }
-    
-    public String getFormattedCreatedAt() {
-        if (createdAt == null) return "";
-        return createdAt.format(DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm"));
-    }
-    
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role));
-    }
-    
-    @Override
-    public String getUsername() { return email; }
-    
-    @Override
-    public boolean isAccountNonExpired() { return true; }
-    
-    @Override
-    public boolean isAccountNonLocked() { return true; }
-    
-    @Override
-    public boolean isCredentialsNonExpired() { return true; }
+    public void setItems(List<Item> items) { this.items = items; }
+    public void setClaims(List<Claim> claims) { this.claims = claims; }
 }

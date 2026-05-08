@@ -1,73 +1,41 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/header :: header"></head>
+<head th:replace="~{fragments/layout :: common-head('Report Found Item')}"></head>
 <body>
 
-<div th:replace="fragments/header :: navbar"></div>
+<div th:replace="~{fragments/layout :: navbar}"></div>
 
-<div class="container" style="padding: 32px 24px; max-width: 800px;">
-    <div class="card">
-        <div class="card-header">📦 Report Found Item</div>
-        <div class="card-body">
-
-            <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
-
-            <form method="post" enctype="multipart/form-data" th:action="@{/report-found}">
-                <div class="form-group">
-                    <label class="form-label">Item Title *</label>
-                    <input type="text" name="title" class="form-control" required
-                           placeholder="e.g., Black iPhone 13, Blue Water Bottle"/>
+<div class="py-6 max-w-3xl mx-auto px-4">
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+        <div class="px-6 py-5 bg-gradient-to-r from-green-600 to-emerald-600">
+            <div class="flex items-center">
+                <i class="fas fa-search-plus text-white text-3xl mr-3"></i>
+                <div>
+                    <h2 class="text-2xl font-bold text-white">Report Found Item</h2>
+                    <p class="text-green-100 mt-1">Help reunite lost items with their owners</p>
                 </div>
-
-                <!-- Fixed: category options match Item.getCategoryIcon() -->
-                <div class="form-group">
-                    <label class="form-label">Category *</label>
-                    <select name="category" class="form-select" required>
-                        <option value="">Select category</option>
-                        <option value="PHONE">📱 Phone</option>
-                        <option value="LAPTOP">💻 Laptop</option>
-                        <option value="ID_CARD">🪪 ID Card</option>
-                        <option value="WATER_BOTTLE">💧 Water Bottle</option>
-                        <option value="KEYS">🔑 Keys</option>
-                        <option value="WALLET">👛 Wallet</option>
-                        <option value="BOOK">📚 Book</option>
-                        <option value="BAG">🎒 Bag</option>
-                        <option value="GLASSES">👓 Glasses</option>
-                        <option value="CHARGER">🔌 Charger</option>
-                        <option value="OTHER">📦 Other</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Location Found *</label>
-                    <input type="text" name="location" class="form-control" required
-                           placeholder="e.g., Muhabura Hall, Library, Cafeteria"/>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Description *</label>
-                    <textarea name="description" class="form-control" rows="5" required
-                              placeholder="Describe the item in detail - color, brand, condition, any distinctive marks..."></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Photo (Optional)</label>
-                    <input type="file" name="photo" class="form-control"
-                           accept="image/jpeg,image/png,image/jpg,image/webp"/>
-                </div>
-
-                <div style="display: flex; gap: 16px; margin-top: 8px;">
-                    <button type="submit" class="btn btn-primary">Report Found Item</button>
-                    <a href="/dashboard" class="btn btn-outline">Cancel</a>
-                </div>
-            </form>
+            </div>
         </div>
+        
+        <form method="post" th:action="@{/report-found}" class="p-6 space-y-6">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            
+            <div><label class="block text-sm font-medium text-gray-700 mb-1">Item Title *</label><input type="text" name="title" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500" placeholder="e.g., Black Lenovo Laptop"></div>
+            <div><label class="block text-sm font-medium text-gray-700 mb-1">Category *</label><select name="category" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500"><option>Electronics</option><option>Documents</option><option>Keys</option><option>Accessories</option><option>Clothing</option><option>Books</option><option>Bags</option><option>Wallet/Purse</option><option>Phone</option><option>Jewelry</option><option>Other</option></select></div>
+            <div><label class="block text-sm font-medium text-gray-700 mb-1">Found Location *</label><input type="text" name="location" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500" placeholder="e.g., Library 2nd Floor, Cafeteria near pizza station"></div>
+            <div><label class="block text-sm font-medium text-gray-700 mb-1">Date Found *</label><input type="date" name="dateFound" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500"></div>
+            <div><label class="block text-sm font-medium text-gray-700 mb-1">Description</label><textarea name="description" rows="4" class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500" placeholder="Describe the item's appearance, color, brand, condition..."></textarea></div>
+            
+            <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                <div class="flex items-start"><i class="fas fa-archive text-blue-400 mt-0.5 mr-2"></i><div><h3 class="text-sm font-medium text-blue-800">Where is the item now?</h3><p class="text-sm text-blue-700">Keep at Campus Security Office (Building A, Room 101) until claimed.</p></div></div>
+            </div>
+            
+            <button type="submit" class="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">Report Found Item</button>
+        </form>
     </div>
 </div>
 
-<footer style="text-align: center; padding: 32px; border-top: 1px solid #e5e7eb; margin-top: 32px;">
-    <p>© 2024 FindIt - Campus Lost &amp; Found System | CST</p>
-</footer>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
 
 </body>
 </html>

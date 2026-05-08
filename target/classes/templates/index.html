@@ -1,226 +1,63 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>FindIt - Campus Lost & Found</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-        }
-        .navbar {
-            background: rgba(255,255,255,0.95);
-            padding: 1rem 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-        .navbar .container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .logo {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #667eea;
-            text-decoration: none;
-        }
-        .nav-links a {
-            margin-left: 20px;
-            text-decoration: none;
-            color: #333;
-            font-weight: 500;
-        }
-        .btn {
-            padding: 10px 24px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-        }
-        .btn-primary {
-            background: #667eea;
-            color: white;
-        }
-        .btn-outline {
-            border: 1px solid #667eea;
-            color: #667eea;
-        }
-        .hero {
-            min-height: 80vh;
-            display: flex;
-            align-items: center;
-            color: white;
-        }
-        .hero h1 {
-            font-size: 3.5rem;
-            margin-bottom: 1rem;
-        }
-        .hero p {
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-            opacity: 0.9;
-        }
-        .stats {
-            background: white;
-            padding: 3rem 0;
-            border-radius: 30px 30px 0 0;
-        }
-        .stats .container {
-            display: flex;
-            justify-content: space-around;
-            text-align: center;
-        }
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #667eea;
-        }
-        .features {
-            padding: 4rem 0;
-            background: #f8f9fa;
-        }
-        .features h2 {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-        .feature-grid {
-            display: flex;
-            gap: 2rem;
-        }
-        .feature-card {
-            background: white;
-            padding: 2rem;
-            border-radius: 16px;
-            text-align: center;
-            flex: 1;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-        .feature-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-        .steps {
-            padding: 4rem 0;
-        }
-        .steps h2 {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-        .step-grid {
-            display: flex;
-            gap: 2rem;
-        }
-        .step {
-            flex: 1;
-            text-align: center;
-        }
-        .step-circle {
-            width: 60px;
-            height: 60px;
-            background: #667eea;
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin: 0 auto 1rem;
-        }
-        .cta {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            text-align: center;
-            padding: 4rem;
-            border-radius: 30px;
-            margin: 2rem 0;
-        }
-        footer {
-            text-align: center;
-            padding: 2rem;
-            color: #666;
-        }
-        @media (max-width: 768px) {
-            .hero h1 { font-size: 2rem; }
-            .feature-grid, .step-grid, .stats .container { flex-direction: column; gap: 1rem; }
-        }
-    </style>
-</head>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: common-head('Welcome')}"></head>
 <body>
-    <nav class="navbar">
-        <div class="container">
-            <a href="/" class="logo">🔍 FindIt</a>
-            <div class="nav-links">
-                <a href="/login">Login</a>
-                <a href="/register" class="btn btn-primary">Sign Up</a>
-            </div>
-        </div>
-    </nav>
 
-    <div class="hero">
-        <div class="container">
-            <div>
-                <h1>Lost Something? <br>FindIt Helps!</h1>
-                <p>The official campus lost and found system for CST.<br>Report, search, and recover your belongings securely.</p>
-                <a href="/register" class="btn btn-primary" style="background: white; color: #667eea; margin-right: 1rem;">Get Started</a>
-                <a href="#how-it-works" class="btn btn-outline" style="border-color: white; color: white;">How It Works</a>
-            </div>
-        </div>
-    </div>
+<div th:replace="~{fragments/layout :: navbar}"></div>
 
-    <div class="stats">
-        <div class="container">
-            <div><div class="stat-number">500+</div><div>Active Students</div></div>
-            <div><div class="stat-number">200+</div><div>Items Found</div></div>
-            <div><div class="stat-number">150+</div><div>Happy Recoveries</div></div>
-            <div><div class="stat-number">4.9⭐</div><div>User Rating</div></div>
-        </div>
-    </div>
-
-    <div id="how-it-works" class="steps">
-        <div class="container">
-            <h2>How FindIt Works</h2>
-            <div class="step-grid">
-                <div class="step"><div class="step-circle">1</div><h3>Report</h3><p>Report lost or found items</p></div>
-                <div class="step"><div class="step-circle">2</div><h3>Search</h3><p>Browse by category</p></div>
-                <div class="step"><div class="step-circle">3</div><h3>Claim</h3><p>Submit verification</p></div>
-                <div class="step"><div class="step-circle">4</div><h3>Recover</h3><p>Get your item back</p></div>
+<!-- Hero Section -->
+<div class="relative overflow-hidden bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
+        <div class="text-center">
+            <h1 class="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
+                <span class="block">Lost Something?</span>
+                <span class="block text-indigo-600">FindIt Helps You Recover!</span>
+            </h1>
+            <p class="mt-3 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
+                The official campus lost and found system. Report, search, and reclaim your belongings securely and instantly.
+            </p>
+            <div class="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
+                <div class="rounded-md shadow">
+                    <a href="/register" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10">
+                        Get Started <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+                <div class="mt-3 rounded-md shadow sm:mt-0 sm:ml-3">
+                    <a href="/login" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10">
+                        Sign In
+                    </a>
+                </div>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="features">
-        <div class="container">
-            <h2>Why Students ❤️ FindIt</h2>
-            <div class="feature-grid">
-                <div class="feature-card"><div class="feature-icon">🔒</div><h3>Secure Verification</h3><p>Every claim reviewed by admin</p></div>
-                <div class="feature-card"><div class="feature-icon">📱</div><h3>Easy to Use</h3><p>Works on any device</p></div>
-                <div class="feature-card"><div class="feature-icon">⚡</div><h3>Real-time Updates</h3><p>Get notified instantly</p></div>
-            </div>
+<!-- Stats Section -->
+<div class="bg-white">
+    <div class="max-w-7xl mx-auto py-12 px-4 sm:py-16 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-2 gap-5 md:grid-cols-4">
+            <div class="text-center"><div class="text-4xl font-extrabold text-indigo-600">500+</div><div class="mt-2 text-sm text-gray-500">Active Students</div></div>
+            <div class="text-center"><div class="text-4xl font-extrabold text-indigo-600">200+</div><div class="mt-2 text-sm text-gray-500">Items Found</div></div>
+            <div class="text-center"><div class="text-4xl font-extrabold text-indigo-600">150+</div><div class="mt-2 text-sm text-gray-500">Happy Recoveries</div></div>
+            <div class="text-center"><div class="text-4xl font-extrabold text-indigo-600">4.9?</div><div class="mt-2 text-sm text-gray-500">User Rating</div></div>
         </div>
     </div>
+</div>
 
-    <div class="container">
-        <div class="cta">
-            <h2>Ready to Get Started?</h2>
-            <p style="margin: 1rem 0">Join thousands of students using FindIt to recover lost belongings.</p>
-            <a href="/register" class="btn btn-primary" style="background: white; color: #667eea;">Create Free Account</a>
+<!-- How it Works -->
+<div class="py-16 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-extrabold text-gray-900 text-center mb-12">How FindIt Works</h2>
+        <div class="grid grid-cols-1 gap-8 md:grid-cols-4">
+            <div class="text-center"><div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600 text-2xl font-bold">1</div><h3 class="text-xl font-semibold">Report</h3><p class="mt-2 text-gray-600">Report lost or found items with details</p></div>
+            <div class="text-center"><div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600 text-2xl font-bold">2</div><h3 class="text-xl font-semibold">Search</h3><p class="mt-2 text-gray-600">Browse by category, location, or date</p></div>
+            <div class="text-center"><div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600 text-2xl font-bold">3</div><h3 class="text-xl font-semibold">Claim</h3><p class="mt-2 text-gray-600">Submit verification questions to claim</p></div>
+            <div class="text-center"><div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600 text-2xl font-bold">4</div><h3 class="text-xl font-semibold">Recover</h3><p class="mt-2 text-gray-600">Get your item back after admin approval</p></div>
         </div>
     </div>
+</div>
 
-    <footer>
-        <p>© 2024 FindIt - Campus Lost & Found System | CST</p>
-        <p style="margin-top: 8px;">❤️ Helping students recover what matters most</p>
-    </footer>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+
 </body>
 </html>

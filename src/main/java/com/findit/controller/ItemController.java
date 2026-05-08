@@ -2,143 +2,132 @@ package com.findit.controller;
 
 import com.findit.entity.Item;
 import com.findit.entity.User;
-import com.findit.repository.ClaimRepository;
 import com.findit.service.ItemService;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import com.findit.service.UserService;
+import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import java.util.List;
-import java.util.stream.Collectors;
+import java.time.LocalDateTime;
 
 @Controller
 public class ItemController {
-
+    
+    private static final Logger logger = LoggerFactory.getLogger(ItemController.class);
+    
     private final ItemService itemService;
-    private final ClaimRepository claimRepository;
-
-    public ItemController(ItemService itemService, ClaimRepository claimRepository) {
+    private final UserService userService;
+    
+    public ItemController(ItemService itemService, UserService userService) {
         this.itemService = itemService;
-        this.claimRepository = claimRepository;
+        this.userService = userService;
     }
-
-    // Fixed: was returning "dashboard", template is at "items/dashboard"
-    @GetMapping("/dashboard")
-    public String dashboard(Model model, @AuthenticationPrincipal User user) {
-        model.addAttribute("userName", user != null ? user.getName() : "Guest");
-        model.addAttribute("recentFoundItems", itemService.getRecentFoundItems(6));
-        model.addAttribute("recentLostItems", itemService.getRecentLostItems(6));
-        
-        // Student-specific stats
-        List<Item> userItems = itemService.getUserItems(user);
-        long foundCount = userItems.stream().filter(i -> !i.isLost()).count();
-        long lostCount = userItems.stream().filter(Item::isLost).count();
-        long claimsCount = claimRepository.findByClaimant(user).size();
-        
-        model.addAttribute("myFoundItemsCount", foundCount);
-        model.addAttribute("myLostItemsCount", lostCount);
-        model.addAttribute("myClaimsCount", claimsCount);
-        
-        return "student/dashboard";
-    }
-
-    @GetMapping("/report-found")
-    public String showReportFoundForm() {
-        return "items/report-found";
-    }
-
-    @PostMapping("/report-found")
-    public String submitReportFound(@RequestParam String title,
-                                    @RequestParam String description,
-                                    @RequestParam String category,
-                                    @RequestParam String location,
-                                    @RequestParam(required = false) MultipartFile photo,
-                                    @AuthenticationPrincipal User user,
-                                    RedirectAttributes redirectAttributes) {
-        try {
-            itemService.reportFound(title, description, category, location, photo, user);
-            redirectAttributes.addFlashAttribute("success", "Item reported successfully!");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-        }
-        return "redirect:/dashboard";
-    }
-
+    
     @GetMapping("/report-lost")
-    public String showReportLostForm() {
+    public String showReportLostForm(Model model) {
+        model.addAttribute("item", new ItemDto());
         return "items/report-lost";
     }
-
+    
     @PostMapping("/report-lost")
-    public String submitReportLost(@RequestParam String title,
-                                   @RequestParam String description,
-                                   @RequestParam String category,
-                                   @RequestParam String location,
-                                   @RequestParam(required = false) MultipartFile photo,
-                                   @AuthenticationPrincipal User user,
-                                   RedirectAttributes redirectAttributes) {
+    public String reportLostItem(@Valid @ModelAttribute("item") ItemDto itemDto,
+                                Authentication authentication,
+                                RedirectAttributes redirectAttributes) {
         try {
-            itemService.reportLost(title, description, category, location, photo, user);
+            itemService.reportLostItem(
+                itemDto.getTitle(),
+                itemDto.getCategory(),
+                itemDto.getLocation(),
+                itemDto.getDescription(),
+                LocalDateTime.parse(itemDto.getDateLost() + "T00:00:00"),
+                authentication.getName()
+            );
             redirectAttributes.addFlashAttribute("success", "Lost item reported successfully!");
+            return "redirect:/dashboard";
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Failed to report item: " + e.getMessage());
+            return "redirect:/report-lost";
         }
-        return "redirect:/dashboard";
     }
-
-    @GetMapping("/item/{id}")
-    public String viewItemDetail(@PathVariable Long id, Model model,
-                                 @AuthenticationPrincipal User user) {
-        Item item = itemService.getItemById(id);
-        model.addAttribute("item", item);
-        if (user != null && "ADMIN".equals(user.getRole())) {
-            model.addAttribute("claims", claimRepository.findByItem(item));
+    
+    @GetMapping("/report-found")
+    public String showReportFoundForm(Model model) {
+        model.addAttribute("item", new ItemDto());
+        return "items/report-found";
+    }
+    
+    @PostMapping("/report-found")
+    public String reportFoundItem(@Valid @ModelAttribute("item") ItemDto itemDto,
+                                 Authentication authentication,
+                                 RedirectAttributes redirectAttributes) {
+        try {
+            itemService.reportFoundItem(
+                itemDto.getTitle(),
+                itemDto.getCategory(),
+                itemDto.getLocation(),
+                itemDto.getDescription(),
+                LocalDateTime.parse(itemDto.getDateFound() + "T00:00:00"),
+                authentication.getName()
+            );
+            redirectAttributes.addFlashAttribute("success", "Found item reported successfully!");
+            return "redirect:/dashboard";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to report item: " + e.getMessage());
+            return "redirect:/report-found";
         }
+    }
+    
+    @GetMapping("/my-items")
+    public String myItems(Model model, Authentication authentication) {
+        model.addAttribute("items", itemService.getItemsByUser(authentication.getName()));
+        return "items/my-items";
+    }
+    
+    @GetMapping("/item/{id}")
+    public String viewItem(@PathVariable Long id, Model model) {
+        model.addAttribute("item", itemService.findById(id));
         return "items/item-detail";
     }
-
+    
     @GetMapping("/search")
-    public String searchItems(@RequestParam(required = false) String keyword,
-                              @RequestParam(required = false) String category,
-                              @RequestParam(defaultValue = "false") boolean lost,
-                              Model model) {
-        List<Item> items;
-
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            items = itemService.searchItems(keyword, lost);
-            model.addAttribute("keyword", keyword);
-        } else if (category != null && !category.isEmpty()) {
-            items = itemService.getItemsByCategory(category, lost);
-            model.addAttribute("category", category);
-        } else {
-            items = lost ? itemService.getAllLostItems() : itemService.getAllFoundItems();
-        }
-
+    public String searchItems(@RequestParam(required = false, defaultValue = "") String query,
+                             @RequestParam(required = false, defaultValue = "") String category,
+                             @RequestParam(required = false, defaultValue = "") String location,
+                             @RequestParam(required = false, defaultValue = "") String type,
+                             @RequestParam(defaultValue = "0") int page,
+                             Model model) {
+        Page<Item> items = itemService.searchItems(query, category, location, type, PageRequest.of(page, 12));
         model.addAttribute("items", items);
-        model.addAttribute("isLost", lost);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", items.getTotalPages());
         return "items/search";
     }
-
-    @GetMapping("/my-items")
-    public String viewMyItems(@AuthenticationPrincipal User user, Model model) {
-        List<Item> userItems = itemService.getUserItems(user);
-
-        List<Item> foundItems = userItems.stream()
-                .filter(item -> !item.isLost())
-                .collect(Collectors.toList());
-        List<Item> lostItems = userItems.stream()
-                .filter(Item::isLost)
-                .collect(Collectors.toList());
-
-        for (Item item : foundItems) {
-            item.setClaims(claimRepository.findByItem(item));
-        }
-
-        model.addAttribute("foundItems", foundItems);
-        model.addAttribute("lostItems", lostItems);
-        return "items/my-items";
+    
+    static class ItemDto {
+        private String title;
+        private String category;
+        private String location;
+        private String description;
+        private String dateLost;
+        private String dateFound;
+        
+        public String getTitle() { return title; }
+        public void setTitle(String title) { this.title = title; }
+        public String getCategory() { return category; }
+        public void setCategory(String category) { this.category = category; }
+        public String getLocation() { return location; }
+        public void setLocation(String location) { this.location = location; }
+        public String getDescription() { return description; }
+        public void setDescription(String description) { this.description = description; }
+        public String getDateLost() { return dateLost; }
+        public void setDateLost(String dateLost) { this.dateLost = dateLost; }
+        public String getDateFound() { return dateFound; }
+        public void setDateFound(String dateFound) { this.dateFound = dateFound; }
     }
 }

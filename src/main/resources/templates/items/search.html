@@ -1,112 +1,66 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="fragments/header :: header"></head>
-<body>
+<head th:replace="~{fragments/layout :: common-head('Search Items')}"></head>
+<body x-data="{ query: '', category: '', location: '', type: '' }">
 
-<div th:replace="fragments/header :: navbar"></div>
+<div th:replace="~{fragments/layout :: navbar}"></div>
 
-<div class="container" style="padding: 32px 24px;">
-    <h1>Search Items</h1>
-
-    <div class="card" style="margin-bottom: 32px;">
-        <div class="card-body">
-            <form method="get" th:action="@{/search}"
-                  style="display: flex; gap: 16px; flex-wrap: wrap; align-items: center;">
-
-                <input type="text" name="keyword" class="form-control"
-                       placeholder="Search by title, description, location..."
-                       th:value="${keyword}"
-                       style="flex: 2; min-width: 200px;"/>
-
-                <!-- Fixed: th:value doesn't work on select; use th:selected on each option -->
-                <select name="category" class="form-select" style="flex: 1; min-width: 140px;">
-                    <option value="" th:selected="${category == null or category == ''}">All Categories</option>
-                    <option value="PHONE"        th:selected="${category == 'PHONE'}">📱 Phone</option>
-                    <option value="LAPTOP"       th:selected="${category == 'LAPTOP'}">💻 Laptop</option>
-                    <option value="ID_CARD"      th:selected="${category == 'ID_CARD'}">🪪 ID Card</option>
-                    <option value="WATER_BOTTLE" th:selected="${category == 'WATER_BOTTLE'}">💧 Water Bottle</option>
-                    <option value="KEYS"         th:selected="${category == 'KEYS'}">🔑 Keys</option>
-                    <option value="WALLET"       th:selected="${category == 'WALLET'}">👛 Wallet</option>
-                    <option value="BOOK"         th:selected="${category == 'BOOK'}">📚 Book</option>
-                    <option value="BAG"          th:selected="${category == 'BAG'}">🎒 Bag</option>
-                    <option value="GLASSES"      th:selected="${category == 'GLASSES'}">👓 Glasses</option>
-                    <option value="CHARGER"      th:selected="${category == 'CHARGER'}">🔌 Charger</option>
-                    <option value="OTHER"        th:selected="${category == 'OTHER'}">📦 Other</option>
-                </select>
-
-                <select name="lost" class="form-select" style="flex: 1; min-width: 120px;">
-                    <option value="false" th:selected="${not isLost}">Found Items</option>
-                    <option value="true"  th:selected="${isLost}">Lost Items</option>
-                </select>
-
-                <button type="submit" class="btn btn-primary">Search</button>
-            </form>
+<div class="py-6 px-4">
+    <!-- Search Filters -->
+    <div class="bg-white shadow rounded-lg p-6 mb-8">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">Search for Items</h2>
+        <form method="get" th:action="@{/search}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <input type="text" name="query" placeholder="Search by title..." class="rounded-md border-gray-300 shadow-sm">
+            <select name="category" class="rounded-md border-gray-300 shadow-sm">
+                <option value="">All Categories</option>
+                <option>Electronics</option><option>Documents</option><option>Keys</option>
+                <option>Accessories</option><option>Clothing</option><option>Books</option>
+                <option>Bags</option><option>Wallet/Purse</option><option>Phone</option><option>Other</option>
+            </select>
+            <input type="text" name="location" placeholder="Location..." class="rounded-md border-gray-300 shadow-sm">
+            <select name="type" class="rounded-md border-gray-300 shadow-sm">
+                <option value="">Both</option><option value="LOST">Lost Items</option><option value="FOUND">Found Items</option>
+            </select>
+            <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 md:col-span-4">Search</button>
+        </form>
+    </div>
+    
+    <!-- Search Results -->
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-medium text-gray-900">Results</h3>
+                <p class="text-sm text-gray-600" th:text="${#lists.size(items)} + ' item(s) found'"></p>
+            </div>
         </div>
-    </div>
-
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-        <h3><span th:text="${#lists.size(items)}"></span> items found</h3>
-    </div>
-
-    <div th:if="${#lists.isEmpty(items)}"
-         style="text-align: center; padding: 64px;">
-        <p style="color: #6b7280; margin-bottom: 16px;">No items found. Try adjusting your search.</p>
-        <a href="/report-found" class="btn btn-primary">Report a Found Item</a>
-    </div>
-
-    <div class="row" th:unless="${#lists.isEmpty(items)}">
-        <div class="col-4" th:each="item : ${items}" style="margin-bottom: 24px;">
-            <div class="card" style="height: 100%;">
-
-                <!-- Photo or placeholder -->
-                <div th:if="${item.photoUrl}"
-                     style="height: 160px; overflow: hidden;">
-                    <img th:src="${item.photoUrl}"
-                         alt="Item photo"
-                         style="width: 100%; height: 100%; object-fit: cover;"/>
-                </div>
-                <div th:unless="${item.photoUrl}"
-                     style="height: 160px; background: #f3f4f6; display: flex;
-                            align-items: center; justify-content: center; font-size: 48px;">
-                    <span th:text="${item.categoryIcon}">📦</span>
-                </div>
-
-                <div class="card-body">
-                    <div style="display: flex; justify-content: space-between;
-                                align-items: center; margin-bottom: 8px;">
-                        <strong>
-                            <a th:href="@{/item/{id}(id=${item.id})}"
-                               th:text="${item.title}"
-                               style="color: #333;"></a>
-                        </strong>
-                        <span class="badge"
-                              th:class="${item.lost} ? 'badge-pending' : 'badge-approved'"
-                              th:text="${item.lost} ? 'Lost' : 'Found'">
-                        </span>
+        
+        <div th:if="${#lists.isEmpty(items)}" class="text-center py-16">
+            <i class="fas fa-search text-gray-400 text-6xl mb-4"></i>
+            <p class="text-gray-500 text-lg">No items match your search criteria.</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
+            <div th:each="item : ${items}" class="border rounded-lg overflow-hidden hover:shadow-lg">
+                <div class="p-4">
+                    <div class="flex justify-between items-start mb-2">
+                        <a th:href="@{/item/{id}(id=${item.id})}" class="text-lg font-semibold text-gray-900 hover:text-indigo-600" th:text="${item.title}"></a>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                              th:class="${item.type == 'FOUND'} ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                              th:text="${item.type}"></span>
                     </div>
-
-                    <div style="font-size: 13px; color: #6b7280; margin-bottom: 4px;">
-                        📍 <span th:text="${item.location}"></span>
+                    <p class="text-sm text-gray-600 mb-2" th:text="${item.category} + ' � ' + ${item.location}"></p>
+                    <p class="text-sm text-gray-500 mb-3" th:text="${item.description?.length > 80 ? item.description.substring(0,80) + '...' : item.description}"></p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs text-gray-400" th:text="${item.createdAt}"></span>
+                        <a th:href="@{/item/{id}(id=${item.id})}" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">View Details ?</a>
                     </div>
-                    <div style="font-size: 13px; color: #6b7280; margin-bottom: 12px;">
-                        📅 <span th:text="${item.formattedCreatedAt}"></span>
-                    </div>
-
-                    <!-- Fixed: null-safe description truncation -->
-                    <p style="font-size: 13px; color: #374151;"
-                       th:text="${item.description != null and item.description.length() > 100}
-                                 ? ${item.description.substring(0, 100) + '...'}
-                                 : ${item.description}">
-                    </p>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<footer style="text-align: center; padding: 32px; border-top: 1px solid #e5e7eb; margin-top: 32px;">
-    <p>© 2024 FindIt - Campus Lost &amp; Found System | CST</p>
-</footer>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
 
 </body>
 </html>
