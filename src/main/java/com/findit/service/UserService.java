@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -63,16 +64,25 @@ public class UserService {
     }
     
     public User findByEmail(String email) {
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) {
+            throw new ResourceNotFoundException("User not found with email: " + email);
+        }
+        return userOpt.get();
     }
     
-    public User findById(@org.springframework.lang.NonNull Long id) {
-        return userRepository.findById(java.util.Objects.requireNonNull(id))
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+    public User findById(Long id) {
+        Optional<User> userOpt = userRepository.findById(id);
+        if (userOpt.isEmpty()) {
+            throw new ResourceNotFoundException("User not found with id: " + id);
+        }
+        return userOpt.get();
     }
     
     public User save(User user) {
+        if (user == null) {
+            throw new IllegalArgumentException("User cannot be null");
+        }
         user.setUpdatedAt(LocalDateTime.now());
         return userRepository.save(user);
     }
@@ -115,6 +125,19 @@ public class UserService {
         user.setLockTime(null);
         userRepository.save(user);
         logger.info("Failed attempts reset for user: {}", email);
+    }
+    
+    public void deleteUser(Long userId) {
+        User user = findById(userId);
+        userRepository.delete(user);
+        logger.info("User deleted: {} ({})", user.getEmail(), user.getId());
+    }
+    
+    public List<User> searchUsers(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return userRepository.findAll();
+        }
+        return userRepository.findByNameContainingOrEmailContaining(query, query);
     }
     
     private void validatePasswordStrength(String password) {

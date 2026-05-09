@@ -12,13 +12,15 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
     
-    private static final Logger log = LoggerFactory.getLogger(AdminController.class);
+    private static final Logger logger = LoggerFactory.getLogger(AdminController.class);
     
     private final ClaimService claimService;
     private final ItemService itemService;
@@ -32,7 +34,7 @@ public class AdminController {
     
     @GetMapping("/dashboard")
     public String adminDashboard(Model model) {
-        log.debug("Admin dashboard accessed");
+        logger.debug("Admin dashboard accessed");
         Map<String, Long> stats = new HashMap<>();
         stats.put("totalUsers", userService.getTotalUserCount());
         stats.put("foundItems", itemService.getFoundItemsCount());
@@ -48,9 +50,41 @@ public class AdminController {
     }
     
     @GetMapping("/users")
-    public String manageUsers(Model model) {
-        model.addAttribute("users", userService.getAllUsers());
+    public String manageUsers(@RequestParam(required = false) String search, Model model) {
+        List<User> users;
+        if (search != null && !search.trim().isEmpty()) {
+            users = userService.searchUsers(search);
+            model.addAttribute("searchQuery", search);
+        } else {
+            users = userService.getAllUsers();
+        }
+        model.addAttribute("users", users);
         return "admin/users";
+    }
+    
+    @PostMapping("/user/{id}/role")
+    public String updateUserRole(@PathVariable Long id, @RequestParam String role) {
+        User user = userService.findById(Objects.requireNonNull(id));
+        user.setRole(role);
+        userService.save(user);
+        return "redirect:/admin/users";
+    }
+    
+    @PostMapping("/user/{id}/toggle")
+    public String toggleUserEnabled(@PathVariable Long id) {
+        User user = userService.findById(Objects.requireNonNull(id));
+        user.setEnabled(!user.getEnabled());
+        userService.save(user);
+        return "redirect:/admin/users";
+    }
+    
+    @DeleteMapping("/user/{id}/delete")
+    @ResponseBody
+    public Map<String, String> deleteUser(@PathVariable Long id) {
+        userService.deleteUser(Objects.requireNonNull(id));
+        Map<String, String> response = new HashMap<>();
+        response.put("status", "success");
+        return response;
     }
     
     @GetMapping("/items")
@@ -96,32 +130,5 @@ public class AdminController {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/admin/claims/pending";
-    }
-    
-    @PostMapping("/user/{id}/role")
-    public String updateUserRole(@PathVariable Long id, @RequestParam String role,
-                                RedirectAttributes redirectAttributes) {
-        try {
-            User user = userService.findById(id);
-            user.setRole(role);
-            userService.save(user);
-            redirectAttributes.addFlashAttribute("success", "User role updated to " + role);
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-        }
-        return "redirect:/admin/users";
-    }
-    
-    @PostMapping("/user/{id}/toggle")
-    public String toggleUserEnabled(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        try {
-            User user = userService.findById(id);
-            user.setEnabled(!user.getEnabled());
-            userService.save(user);
-            redirectAttributes.addFlashAttribute("success", "User " + (user.getEnabled() ? "enabled" : "disabled"));
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-        }
-        return "redirect:/admin/users";
     }
 }

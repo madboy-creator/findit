@@ -8,15 +8,103 @@
 <div class="py-6 px-4">
     <h1 class="text-2xl font-bold text-gray-900 mb-6">Admin Dashboard</h1>
     
+    <!-- Stats Cards with Clickable Links -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div class="bg-white rounded-lg shadow p-6"><div class="text-3xl font-bold text-indigo-600" th:text="${stats.totalUsers}">0</div><div class="text-gray-600">Total Users</div></div>
-        <div class="bg-white rounded-lg shadow p-6"><div class="text-3xl font-bold text-green-600" th:text="${stats.foundItems}">0</div><div class="text-gray-600">Found Items</div></div>
-        <div class="bg-white rounded-lg shadow p-6"><div class="text-3xl font-bold text-red-600" th:text="${stats.lostItems}">0</div><div class="text-gray-600">Lost Items</div></div>
-        <div class="bg-white rounded-lg shadow p-6"><div class="text-3xl font-bold text-yellow-600" th:text="${stats.pendingClaims}">0</div><div class="text-gray-600">Pending Claims</div></div>
+        <a href="/admin/users" class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition cursor-pointer block">
+            <div class="text-3xl font-bold text-indigo-600" th:text="${stats.totalUsers}">0</div>
+            <div class="text-gray-600">Total Users</div>
+            <div class="text-sm text-indigo-500 mt-2">Manage Users ?</div>
+        </a>
+        <a href="/admin/items?type=FOUND" class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition cursor-pointer block">
+            <div class="text-3xl font-bold text-green-600" th:text="${stats.foundItems}">0</div>
+            <div class="text-gray-600">Found Items</div>
+            <div class="text-sm text-indigo-500 mt-2">View All ?</div>
+        </a>
+        <a href="/admin/items?type=LOST" class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition cursor-pointer block">
+            <div class="text-3xl font-bold text-red-600" th:text="${stats.lostItems}">0</div>
+            <div class="text-gray-600">Lost Items</div>
+            <div class="text-sm text-indigo-500 mt-2">View All ?</div>
+        </a>
+        <a href="/admin/claims/pending" class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition cursor-pointer block">
+            <div class="text-3xl font-bold text-yellow-600" th:text="${stats.pendingClaims}">0</div>
+            <div class="text-gray-600">Pending Claims</div>
+            <div class="text-sm text-indigo-500 mt-2">Review ?</div>
+        </a>
+    </div>
+
+    <!-- Pending Claims Section -->
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+            <h2 class="text-lg font-semibold text-gray-900">Recent Pending Claims</h2>
+            <a href="/admin/claims/pending" class="text-sm text-indigo-600 hover:text-indigo-800">View All ?</a>
+        </div>
+        <div class="divide-y divide-gray-200">
+            <div th:if="${#lists.isEmpty(pendingClaims)}" class="p-6 text-center text-gray-500">
+                No pending claims. Great job!
+            </div>
+            <div th:each="claim : ${pendingClaims}" class="p-4 hover:bg-gray-50">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="font-medium" th:text="${claim.item.title}">Item Title</p>
+                        <p class="text-sm text-gray-500" th:text="${claim.claimant.name}">Claimant Name</p>
+                        <p class="text-xs text-gray-400" th:text="${claim.submittedAt}">Date</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <form method="post" th:action="@{/admin/claim/{id}/approve(id=${claim.id})}">
+                            <button type="submit" class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600">Approve</button>
+                        </form>
+                        <button onclick="showRejectModal(${claim.id})" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">Reject</button>
+                        <a th:href="@{/item/{id}(id=${claim.item.id})}" class="text-indigo-600 text-sm hover:underline">View Item</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Items Section -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+        <div class="bg-white shadow rounded-lg">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="font-semibold text-gray-900">Recently Found</h3>
+                <a href="/admin/items?type=FOUND" class="text-sm text-indigo-600 hover:text-indigo-800">View All ?</a>
+            </div>
+            <div class="divide-y divide-gray-200">
+                <div th:if="${#lists.isEmpty(recentFoundItems)}" class="p-4 text-center text-gray-500">No found items</div>
+                <div th:each="item : ${recentFoundItems}" class="p-3 hover:bg-gray-50">
+                    <a th:href="@{/item/{id}(id=${item.id})}" class="font-medium text-indigo-600 hover:underline" th:text="${item.title}"></a>
+                    <p class="text-sm text-gray-500" th:text="${item.location}"></p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white shadow rounded-lg">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="font-semibold text-gray-900">Recently Lost</h3>
+                <a href="/admin/items?type=LOST" class="text-sm text-indigo-600 hover:text-indigo-800">View All ?</a>
+            </div>
+            <div class="divide-y divide-gray-200">
+                <div th:if="${#lists.isEmpty(recentLostItems)}" class="p-4 text-center text-gray-500">No lost items</div>
+                <div th:each="item : ${recentLostItems}" class="p-3 hover:bg-gray-50">
+                    <a th:href="@{/item/{id}(id=${item.id})}" class="font-medium text-indigo-600 hover:underline" th:text="${item.title}"></a>
+                    <p class="text-sm text-gray-500" th:text="${item.location}"></p>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
 <footer th:replace="~{fragments/layout :: footer}"></footer>
+
+<script>
+function showRejectModal(claimId) {
+    let reason = prompt("Enter rejection reason:");
+    if (reason && reason.trim()) {
+        fetch('/admin/claim/' + claimId + '/reject?reason=' + encodeURIComponent(reason), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        }).then(() => location.reload());
+    }
+}
+</script>
 
 </body>
 </html>

@@ -22,7 +22,7 @@ public class ItemController {
     private static final Logger log = LoggerFactory.getLogger(ItemController.class);
     
     private final ItemService itemService;
-    private final UserService userService;
+    private final UserService userService; // Reserved for future user operations
     
     public ItemController(ItemService itemService, UserService userService) {
         this.itemService = itemService;
@@ -102,12 +102,12 @@ public class ItemController {
                              @RequestParam(required = false, defaultValue = "") String type,
                              @RequestParam(defaultValue = "0") int page,
                              Model model) {
-        log.debug("Searching items with query: {}", query);
         Pageable pageable = PageRequest.of(page, 12);
         Page<Item> items = itemService.searchItems(query, category, location, type, pageable);
         model.addAttribute("items", items);
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", items.getTotalPages());
+        log.debug("Search performed with query: {}", query);
         return "items/search";
     }
     

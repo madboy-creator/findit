@@ -6,12 +6,19 @@
 <div th:replace="~{fragments/layout :: navbar}"></div>
 
 <div class="py-6 px-4">
-    <h1 class="text-2xl font-bold text-gray-900 mb-6">Manage Users</h1>
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-900">Manage Users</h1>
+        <div class="flex gap-2">
+            <input type="text" id="searchInput" placeholder="Search users..." class="px-3 py-2 border rounded-md">
+            <button onclick="searchUsers()" class="bg-indigo-600 text-white px-4 py-2 rounded-md">Search</button>
+        </div>
+    </div>
     
     <div class="bg-white shadow rounded-lg overflow-hidden">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Student ID</th>
@@ -22,40 +29,68 @@
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
                 <tr th:each="user : ${users}">
-                    <td class="px-6 py-4" th:text="${user.name}"></td>
-                    <td class="px-6 py-4" th:text="${user.email}"></td>
-                    <td class="px-6 py-4" th:text="${user.studentId}"></td>
+                    <td class="px-6 py-4 text-sm" th:text="${user.id}">1</td>
+                    <td class="px-6 py-4 text-sm font-medium" th:text="${user.name}">John Doe</td>
+                    <td class="px-6 py-4 text-sm" th:text="${user.email}">john@example.com</td>
+                    <td class="px-6 py-4 text-sm" th:text="${user.studentId}">STU001</td>
                     <td class="px-6 py-4">
-                        <span th:if="${user.role == 'ADMIN'}" class="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs">ADMIN</span>
-                        <span th:if="${user.role == 'STUDENT'}" class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">STUDENT</span>
+                        <select th:value="${user.role}" id="role-${user.id}" class="text-sm border rounded px-2 py-1">
+                            <option value="STUDENT">Student</option>
+                            <option value="ADMIN">Admin</option>
+                        </select>
                     </td>
                     <td class="px-6 py-4">
-                        <span th:if="${user.enabled}" class="text-green-600">Active</span>
-                        <span th:if="${!user.enabled}" class="text-red-600">Disabled</span>
+                        <span th:if="${user.enabled}" class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Active</span>
+                        <span th:if="${!user.enabled}" class="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">Disabled</span>
                     </td>
-                    <td class="px-6 py-4 space-x-2">
-                        <form method="post" th:action="@{/admin/user/{id}/role(id=${user.id})}" class="inline">
-                            
-                            <select name="role" class="text-sm border rounded px-2 py-1">
-                                <option value="STUDENT" th:selected="${user.role == 'STUDENT'}">Student</option>
-                                <option value="ADMIN" th:selected="${user.role == 'ADMIN'}">Admin</option>
-                            </select>
-                            <button type="submit" class="bg-indigo-500 text-white px-2 py-1 rounded text-sm">Update</button>
-                        </form>
-                        <form method="post" th:action="@{/admin/user/{id}/toggle(id=${user.id})}" class="inline">
-                            
-                            <button type="submit" th:class="${user.enabled} ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'"
-                                    class="text-white px-2 py-1 rounded text-sm">
-                                <span th:if="${user.enabled}">Disable</span>
-                                <span th:if="${!user.enabled}">Enable</span>
-                            </button>
-                        </form>
+                    <td class="px-6 py-4 text-sm space-x-2">
+                        <button onclick="updateRole(${user.id})" class="bg-indigo-500 text-white px-3 py-1 rounded text-xs hover:bg-indigo-600">Save Role</button>
+                        <button onclick="toggleUser(${user.id})" th:class="${user.enabled} ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'" class="text-white px-3 py-1 rounded text-xs">
+                            <span th:if="${user.enabled}">Disable</span>
+                            <span th:if="${!user.enabled}">Enable</span>
+                        </button>
+                        <button onclick="deleteUser(${user.id})" class="bg-red-600 text-white px-3 py-1 rounded text-xs hover:bg-red-700">Delete</button>
                     </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(users)}">
+                    <td colspan="7" class="px-6 py-8 text-center text-gray-500">No users found</td>
                 </tr>
             </tbody>
         </table>
     </div>
 </div>
+
+<script>
+    function updateRole(userId) {
+        var select = document.getElementById('role-' + userId);
+        var role = select.value;
+        fetch('/admin/user/' + userId + '/role?role=' + role, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]').content }
+        }).then(() => location.reload());
+    }
+    
+    function toggleUser(userId) {
+        fetch('/admin/user/' + userId + '/toggle', {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]').content }
+        }).then(() => location.reload());
+    }
+    
+    function deleteUser(userId) {
+        if (confirm('Are you sure you want to delete this user? This will also delete all their items and claims.')) {
+            fetch('/admin/user/' + userId + '/delete', {
+                method: 'DELETE',
+                headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]').content }
+            }).then(() => location.reload());
+        }
+    }
+    
+    function searchUsers() {
+        var query = document.getElementById('searchInput').value;
+        window.location.href = '/admin/users?search=' + encodeURIComponent(query);
+    }
+</script>
 
 <footer th:replace="~{fragments/layout :: footer}"></footer>
 

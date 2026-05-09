@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/simple-layout :: common-head('Sign In')}"></head>
+<head th:replace="~{fragments/layout :: common-head('Sign In')}"></head>
 <body>
+
+<div th:replace="~{fragments/layout :: navbar}"></div>
+
 <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-2xl">
         <div><div class="flex justify-center"><i class="fas fa-search text-indigo-600 text-5xl"></i></div>
@@ -17,5 +20,8 @@
         </form>
     </div>
 </div>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+
 </body>
 </html>
