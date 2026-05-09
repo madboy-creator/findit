@@ -1,3 +1,4 @@
+com\findit\controller\IndexController.class
 com\findit\FindItApplication.class
 com\findit\controller\AdminController.class
 com\findit\service\EmailService.class

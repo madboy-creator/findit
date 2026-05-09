@@ -35,7 +35,7 @@
                     </td>
                     <td class="px-6 py-4 space-x-2">
                         <form method="post" th:action="@{/admin/user/{id}/role(id=${user.id})}" class="inline">
-                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            
                             <select name="role" class="text-sm border rounded px-2 py-1">
                                 <option value="STUDENT" th:selected="${user.role == 'STUDENT'}">Student</option>
                                 <option value="ADMIN" th:selected="${user.role == 'ADMIN'}">Admin</option>
@@ -43,7 +43,7 @@
                             <button type="submit" class="bg-indigo-500 text-white px-2 py-1 rounded text-sm">Update</button>
                         </form>
                         <form method="post" th:action="@{/admin/user/{id}/toggle(id=${user.id})}" class="inline">
-                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            
                             <button type="submit" th:class="${user.enabled} ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'"
                                     class="text-white px-2 py-1 rounded text-sm">
                                 <span th:if="${user.enabled}">Disable</span>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="common-head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title} + ' - FindIt'">FindIt</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+        .nav-link { position: relative; }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #4f46e5;
+            transition: width 0.2s ease;
+        }
+        .nav-link:hover::after { width: 100%; }
+    </style>
+</head>
+<body x-data="{ mobileMenuOpen: false }">
+
+    <!-- Professional Navigation Bar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                
+                <!-- Logo -->
+                <div class="flex-shrink-0">
+                    <a href="/" class="flex items-center space-x-2 group">
+                        <i class="fas fa-search text-indigo-600 text-2xl group-hover:scale-110 transition-transform"></i>
+                        <span class="font-bold text-xl text-gray-800">FindIt</span>
+                    </a>
+                </div>
+
+                <!-- Desktop Navigation Links (Center) -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#features" class="nav-link text-gray-600 hover:text-indigo-600 transition-colors">Features</a>
+                    <a href="#how-it-works" class="nav-link text-gray-600 hover:text-indigo-600 transition-colors">How It Works</a>
+                    <a href="#stats" class="nav-link text-gray-600 hover:text-indigo-600 transition-colors">Impact</a>
+                    <a href="#faq" class="nav-link text-gray-600 hover:text-indigo-600 transition-colors">FAQ</a>
+                </div>
+
+                <!-- Desktop CTA Buttons -->
+                <div class="hidden md:flex items-center space-x-4">
+                    <a href="/login" class="text-gray-600 hover:text-indigo-600 transition-colors font-medium">
+                        Sign In
+                    </a>
+                    <a href="/register" class="px-5 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition shadow-sm hover:shadow font-medium">
+                        Get Started
+                        <i class="fas fa-arrow-right ml-2 text-sm"></i>
+                    </a>
+                </div>
+
+                <!-- Mobile menu button -->
+                <div class="md:hidden">
+                    <button @click="mobileMenuOpen = !mobileMenuOpen" class="text-gray-600 hover:text-gray-900 focus:outline-none">
+                        <i class="fas fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Menu -->
+        <div x-show="mobileMenuOpen" x-cloak class="md:hidden bg-white border-t border-gray-200 shadow-lg">
+            <div class="px-4 pt-2 pb-3 space-y-1">
+                <a href="#features" class="block px-3 py-2 text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 rounded-md transition">Features</a>
+                <a href="#how-it-works" class="block px-3 py-2 text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 rounded-md transition">How It Works</a>
+                <a href="#stats" class="block px-3 py-2 text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 rounded-md transition">Impact</a>
+                <a href="#faq" class="block px-3 py-2 text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 rounded-md transition">FAQ</a>
+                <div class="border-t border-gray-200 mt-2 pt-2">
+                    <a href="/login" class="block px-3 py-2 text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 rounded-md transition">Sign In</a>
+                    <a href="/register" class="block px-3 py-2 mt-1 text-center bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">Get Started</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div th:replace="~{::content}"></div>
+
+</body>
+</html>

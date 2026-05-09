@@ -27,6 +27,7 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
     
+    @Transactional
     public User registerUser(String name, String email, String password, String studentId, String phone) {
         if (userRepository.existsByEmail(email)) {
             throw new DuplicateResourceException("Email already registered: " + email);
@@ -56,7 +57,9 @@ public class UserService {
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
         
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        logger.info("New user registered: {} ({}) as {}", email, studentId, user.getRole());
+        return savedUser;
     }
     
     public User findByEmail(String email) {
@@ -64,8 +67,8 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
     }
     
-    public User findById(Long id) {
-        return userRepository.findById(id)
+    public User findById(@org.springframework.lang.NonNull Long id) {
+        return userRepository.findById(java.util.Objects.requireNonNull(id))
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
     }
     
@@ -86,14 +89,32 @@ public class UserService {
         User user = findByEmail(email);
         user.setLastLogin(LocalDateTime.now());
         userRepository.save(user);
+        logger.info("Last login updated for user: {}", email);
     }
     
+    @Transactional
+    public void increaseFailedAttempts(String email) {
+        User user = findByEmail(email);
+        int attempts = (user.getFailedAttempts() == null ? 0 : user.getFailedAttempts()) + 1;
+        user.setFailedAttempts(attempts);
+        logger.warn("Failed attempts for {}: {}/{}", email, attempts, MAX_FAILED_ATTEMPTS);
+        
+        if (attempts >= MAX_FAILED_ATTEMPTS) {
+            user.setAccountNonLocked(false);
+            user.setLockTime(LocalDateTime.now());
+            logger.warn("Account locked for user: {}", email);
+        }
+        userRepository.save(user);
+    }
+    
+    @Transactional
     public void resetFailedAttempts(String email) {
         User user = findByEmail(email);
         user.setFailedAttempts(0);
         user.setAccountNonLocked(true);
         user.setLockTime(null);
         userRepository.save(user);
+        logger.info("Failed attempts reset for user: {}", email);
     }
     
     private void validatePasswordStrength(String password) {

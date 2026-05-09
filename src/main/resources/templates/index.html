@@ -1,59 +1,125 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/layout :: common-head('Welcome')}"></head>
+<head th:replace="~{fragments/simple-layout :: common-head('Welcome')}"></head>
 <body>
 
-<div th:replace="~{fragments/layout :: navbar}"></div>
-
 <!-- Hero Section -->
-<div class="relative overflow-hidden bg-gradient-to-br from-indigo-50 via-white to-purple-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
+<div class="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500">
+    <div class="absolute inset-0 bg-black opacity-20"></div>
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
         <div class="text-center">
-            <h1 class="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
-                <span class="block">Lost Something?</span>
-                <span class="block text-indigo-600">FindIt Helps You Recover!</span>
+            <h1 class="text-4xl md:text-6xl font-extrabold text-white mb-6">
+                Lost Something?
+                <span class="block text-yellow-300">FindIt Helps You Recover!</span>
             </h1>
-            <p class="mt-3 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-                The official campus lost and found system. Report, search, and reclaim your belongings securely and instantly.
+            <p class="text-xl text-indigo-100 max-w-2xl mx-auto mb-8">
+                The official campus lost and found system for CST. Report, search, and reclaim your belongings securely.
             </p>
-            <div class="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
-                <div class="rounded-md shadow">
-                    <a href="/register" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10">
-                        Get Started <i class="fas fa-arrow-right ml-2"></i>
-                    </a>
-                </div>
-                <div class="mt-3 rounded-md shadow sm:mt-0 sm:ml-3">
-                    <a href="/login" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10">
-                        Sign In
-                    </a>
-                </div>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="/register" class="px-8 py-3 bg-white text-indigo-600 font-semibold rounded-lg hover:bg-gray-100 transition shadow-lg">
+                    Get Started <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+                <a href="#how-it-works" class="px-8 py-3 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-indigo-600 transition">
+                    How It Works
+                </a>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Stats Section -->
-<div class="bg-white">
-    <div class="max-w-7xl mx-auto py-12 px-4 sm:py-16 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-2 gap-5 md:grid-cols-4">
-            <div class="text-center"><div class="text-4xl font-extrabold text-indigo-600">500+</div><div class="mt-2 text-sm text-gray-500">Active Students</div></div>
-            <div class="text-center"><div class="text-4xl font-extrabold text-indigo-600">200+</div><div class="mt-2 text-sm text-gray-500">Items Found</div></div>
-            <div class="text-center"><div class="text-4xl font-extrabold text-indigo-600">150+</div><div class="mt-2 text-sm text-gray-500">Happy Recoveries</div></div>
-            <div class="text-center"><div class="text-4xl font-extrabold text-indigo-600">4.9?</div><div class="mt-2 text-sm text-gray-500">User Rating</div></div>
+<div class="bg-white py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div>
+                <div class="text-4xl font-bold text-indigo-600">500+</div>
+                <div class="text-gray-600 mt-2">Active Students</div>
+            </div>
+            <div>
+                <div class="text-4xl font-bold text-indigo-600">200+</div>
+                <div class="text-gray-600 mt-2">Items Found</div>
+            </div>
+            <div>
+                <div class="text-4xl font-bold text-indigo-600">150+</div>
+                <div class="text-gray-600 mt-2">Happy Recoveries</div>
+            </div>
+            <div>
+                <div class="text-4xl font-bold text-indigo-600">4.9?</div>
+                <div class="text-gray-600 mt-2">User Rating</div>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- How it Works -->
-<div class="py-16 bg-gray-50">
+<!-- How It Works Section -->
+<div id="how-it-works" class="py-16 bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 class="text-3xl font-extrabold text-gray-900 text-center mb-12">How FindIt Works</h2>
-        <div class="grid grid-cols-1 gap-8 md:grid-cols-4">
-            <div class="text-center"><div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600 text-2xl font-bold">1</div><h3 class="text-xl font-semibold">Report</h3><p class="mt-2 text-gray-600">Report lost or found items with details</p></div>
-            <div class="text-center"><div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600 text-2xl font-bold">2</div><h3 class="text-xl font-semibold">Search</h3><p class="mt-2 text-gray-600">Browse by category, location, or date</p></div>
-            <div class="text-center"><div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600 text-2xl font-bold">3</div><h3 class="text-xl font-semibold">Claim</h3><p class="mt-2 text-gray-600">Submit verification questions to claim</p></div>
-            <div class="text-center"><div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600 text-2xl font-bold">4</div><h3 class="text-xl font-semibold">Recover</h3><p class="mt-2 text-gray-600">Get your item back after admin approval</p></div>
+        <h2 class="text-3xl font-bold text-center text-gray-900 mb-12">How FindIt Works</h2>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div class="text-center">
+                <div class="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span class="text-2xl font-bold text-indigo-600">1</span>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Report</h3>
+                <p class="text-gray-600">Report lost or found items with details</p>
+            </div>
+            <div class="text-center">
+                <div class="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span class="text-2xl font-bold text-indigo-600">2</span>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Search</h3>
+                <p class="text-gray-600">Browse by category or location</p>
+            </div>
+            <div class="text-center">
+                <div class="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span class="text-2xl font-bold text-indigo-600">3</span>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Claim</h3>
+                <p class="text-gray-600">Submit verification questions</p>
+            </div>
+            <div class="text-center">
+                <div class="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span class="text-2xl font-bold text-indigo-600">4</span>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Recover</h3>
+                <p class="text-gray-600">Get your item back after approval</p>
+            </div>
         </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-bold text-center text-gray-900 mb-12">Why Students ?? FindIt</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="text-center p-6 rounded-lg hover:shadow-lg transition">
+                <div class="text-5xl mb-4">??</div>
+                <h3 class="text-xl font-semibold mb-2">Secure Verification</h3>
+                <p class="text-gray-600">Every claim reviewed by admin before approval</p>
+            </div>
+            <div class="text-center p-6 rounded-lg hover:shadow-lg transition">
+                <div class="text-5xl mb-4">??</div>
+                <h3 class="text-xl font-semibold mb-2">Easy to Use</h3>
+                <p class="text-gray-600">Simple interface that works on any device</p>
+            </div>
+            <div class="text-center p-6 rounded-lg hover:shadow-lg transition">
+                <div class="text-5xl mb-4">?</div>
+                <h3 class="text-xl font-semibold mb-2">Real-time Updates</h3>
+                <p class="text-gray-600">Get notified instantly about your claims</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CTA Section -->
+<div class="py-16 bg-gradient-to-r from-indigo-600 to-purple-600">
+    <div class="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+        <h2 class="text-3xl font-bold text-white mb-4">Ready to Get Started?</h2>
+        <p class="text-indigo-100 mb-8">Join thousands of students using FindIt to recover lost belongings.</p>
+        <a href="/register" class="inline-block px-8 py-3 bg-white text-indigo-600 font-semibold rounded-lg hover:bg-gray-100 transition shadow-lg">
+            Create Free Account <i class="fas fa-arrow-right ml-2"></i>
+        </a>
     </div>
 </div>
 

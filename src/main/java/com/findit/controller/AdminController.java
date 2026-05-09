@@ -18,7 +18,7 @@ import java.util.Map;
 @RequestMapping("/admin")
 public class AdminController {
     
-    private static final Logger logger = LoggerFactory.getLogger(AdminController.class);
+    private static final Logger log = LoggerFactory.getLogger(AdminController.class);
     
     private final ClaimService claimService;
     private final ItemService itemService;
@@ -32,6 +32,7 @@ public class AdminController {
     
     @GetMapping("/dashboard")
     public String adminDashboard(Model model) {
+        log.debug("Admin dashboard accessed");
         Map<String, Long> stats = new HashMap<>();
         stats.put("totalUsers", userService.getTotalUserCount());
         stats.put("foundItems", itemService.getFoundItemsCount());

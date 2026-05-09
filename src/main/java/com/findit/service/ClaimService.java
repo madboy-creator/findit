@@ -65,7 +65,7 @@ public class ClaimService {
     }
     
     public Claim findById(Long id) {
-        return claimRepository.findById(id)
+        return claimRepository.findById(java.util.Objects.requireNonNull(id))
                 .orElseThrow(() -> new ResourceNotFoundException("Claim not found with id: " + id));
     }
     

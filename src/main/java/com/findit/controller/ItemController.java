@@ -1,7 +1,6 @@
 package com.findit.controller;
 
 import com.findit.entity.Item;
-import com.findit.entity.User;
 import com.findit.service.ItemService;
 import com.findit.service.UserService;
 import jakarta.validation.Valid;
@@ -9,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @Controller
 public class ItemController {
     
-    private static final Logger logger = LoggerFactory.getLogger(ItemController.class);
+    private static final Logger log = LoggerFactory.getLogger(ItemController.class);
     
     private final ItemService itemService;
     private final UserService userService;
@@ -102,7 +102,9 @@ public class ItemController {
                              @RequestParam(required = false, defaultValue = "") String type,
                              @RequestParam(defaultValue = "0") int page,
                              Model model) {
-        Page<Item> items = itemService.searchItems(query, category, location, type, PageRequest.of(page, 12));
+        log.debug("Searching items with query: {}", query);
+        Pageable pageable = PageRequest.of(page, 12);
+        Page<Item> items = itemService.searchItems(query, category, location, type, pageable);
         model.addAttribute("items", items);
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", items.getTotalPages());

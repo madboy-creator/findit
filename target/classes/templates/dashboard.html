@@ -6,105 +6,56 @@
 <div th:replace="~{fragments/layout :: navbar}"></div>
 
 <div class="py-6 px-4">
-    <!-- Welcome Banner -->
     <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg p-6 mb-8 text-white">
-        <div class="flex justify-between items-center">
-            <div>
-                <h1 class="text-2xl font-bold mb-2" th:text="'Welcome back, ' + ${userName} + '!'">Welcome!</h1>
-                <p class="text-indigo-100">Track your lost and found items, manage claims, and recover what matters most.</p>
-            </div>
-            <div class="hidden md:block">
-                <i class="fas fa-graduation-cap text-6xl text-indigo-200"></i>
-            </div>
-        </div>
+        <h1 class="text-2xl font-bold mb-2" th:text="'Welcome, ' + ${userName} + '!'">Welcome!</h1>
+        <p>Track your lost and found items, manage claims, and recover what matters most.</p>
     </div>
 
-    <!-- Quick Action Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <a href="/report-lost" class="bg-white rounded-lg shadow-md p-5 hover:shadow-lg transition-smooth hover:-translate-y-1">
-            <div class="flex items-center">
-                <div class="flex-shrink-0 bg-red-100 rounded-full p-3"><i class="fas fa-search-minus text-red-600 text-xl"></i></div>
-                <div class="ml-4"><h3 class="text-lg font-medium text-gray-900">Report Lost</h3><p class="text-sm text-gray-500">Something missing?</p></div>
-            </div>
+        <a href="/report-lost" class="bg-white rounded-lg shadow p-5 hover:shadow-lg text-center">
+            <i class="fas fa-search-minus text-red-600 text-3xl mb-2"></i>
+            <h3 class="font-medium">Report Lost</h3>
         </a>
-        <a href="/report-found" class="bg-white rounded-lg shadow-md p-5 hover:shadow-lg transition-smooth hover:-translate-y-1">
-            <div class="flex items-center">
-                <div class="flex-shrink-0 bg-green-100 rounded-full p-3"><i class="fas fa-search-plus text-green-600 text-xl"></i></div>
-                <div class="ml-4"><h3 class="text-lg font-medium text-gray-900">Report Found</h3><p class="text-sm text-gray-500">Found something?</p></div>
-            </div>
+        <a href="/report-found" class="bg-white rounded-lg shadow p-5 hover:shadow-lg text-center">
+            <i class="fas fa-search-plus text-green-600 text-3xl mb-2"></i>
+            <h3 class="font-medium">Report Found</h3>
         </a>
-        <a href="/search" class="bg-white rounded-lg shadow-md p-5 hover:shadow-lg transition-smooth hover:-translate-y-1">
-            <div class="flex items-center">
-                <div class="flex-shrink-0 bg-blue-100 rounded-full p-3"><i class="fas fa-search text-blue-600 text-xl"></i></div>
-                <div class="ml-4"><h3 class="text-lg font-medium text-gray-900">Search Items</h3><p class="text-sm text-gray-500">Browse all items</p></div>
-            </div>
+        <a href="/search" class="bg-white rounded-lg shadow p-5 hover:shadow-lg text-center">
+            <i class="fas fa-search text-blue-600 text-3xl mb-2"></i>
+            <h3 class="font-medium">Search Items</h3>
         </a>
-        <a href="/my-claims" class="bg-white rounded-lg shadow-md p-5 hover:shadow-lg transition-smooth hover:-translate-y-1">
-            <div class="flex items-center">
-                <div class="flex-shrink-0 bg-purple-100 rounded-full p-3"><i class="fas fa-clipboard-list text-purple-600 text-xl"></i></div>
-                <div class="ml-4"><h3 class="text-lg font-medium text-gray-900">My Claims</h3><p class="text-sm text-gray-500">Track your claims</p></div>
-            </div>
+        <a href="/my-claims" class="bg-white rounded-lg shadow p-5 hover:shadow-lg text-center">
+            <i class="fas fa-clipboard-list text-purple-600 text-3xl mb-2"></i>
+            <h3 class="font-medium">My Claims</h3>
         </a>
     </div>
 
-    <!-- Success/Error Messages -->
-    <div th:if="${success}" class="mb-4 rounded-md bg-green-50 p-4" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)">
-        <div class="flex"><div class="flex-shrink-0"><i class="fas fa-check-circle text-green-400"></i></div><div class="ml-3"><p class="text-sm font-medium text-green-800" th:text="${success}"></p></div></div>
-    </div>
-    <div th:if="${error}" class="mb-4 rounded-md bg-red-50 p-4" x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)">
-        <div class="flex"><div class="flex-shrink-0"><i class="fas fa-exclamation-circle text-red-400"></i></div><div class="ml-3"><p class="text-sm font-medium text-red-800" th:text="${error}"></p></div></div>
-    </div>
-
-    <!-- Recent Items Section -->
-    <div class="bg-white shadow rounded-lg overflow-hidden">
-        <div class="border-b border-gray-200">
-            <nav class="-mb-px flex">
-                <button @click="activeTab = 'recent'" :class="{'border-indigo-500 text-indigo-600': activeTab === 'recent'}" class="py-4 px-6 text-center border-b-2 font-medium text-sm">Recent Activity</button>
-                <button @click="activeTab = 'found'" :class="{'border-indigo-500 text-indigo-600': activeTab === 'found'}" class="py-4 px-6 text-center border-b-2 font-medium text-sm">Found Items</button>
-                <button @click="activeTab = 'lost'" :class="{'border-indigo-500 text-indigo-600': activeTab === 'lost'}" class="py-4 px-6 text-center border-b-2 font-medium text-sm">Lost Items</button>
-            </nav>
+    <!-- Recent Found Items -->
+    <div class="bg-white shadow rounded-lg p-6 mb-6" th:if="${recentFoundItems != null and !#lists.isEmpty(recentFoundItems)}">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-gray-800">Recently Found</h2>
+            <a href="/search?type=FOUND" class="text-indigo-600 text-sm hover:underline">View All ?</a>
         </div>
-        
-        <div class="p-6" x-data="{ activeTab: 'recent' }">
-            <div x-show="activeTab === 'recent'">
-                <div th:if="${recentFoundItems == null and recentLostItems == null}" class="text-center py-12 text-gray-500">
-                    <i class="fas fa-inbox text-5xl mb-3"></i>
-                    <p>No items to display yet. Start by reporting an item!</p>
-                </div>
-                <div th:if="${recentFoundItems != null and !#lists.isEmpty(recentFoundItems)}">
-                    <h3 class="text-lg font-medium text-gray-900 mb-3">Recently Found</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                        <div th:each="item : ${recentFoundItems}" class="border rounded-lg p-4 hover:shadow-md">
-                            <a th:href="@{/item/{id}(id=${item.id})}" class="font-semibold text-gray-900 hover:text-indigo-600" th:text="${item.title}"></a>
-                            <p class="text-sm text-gray-600 mt-1" th:text="${item.category} + ' • ' + ${item.location}"></p>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">FOUND</span>
-                        </div>
-                    </div>
-                </div>
-                <div th:if="${recentLostItems != null and !#lists.isEmpty(recentLostItems)}">
-                    <h3 class="text-lg font-medium text-gray-900 mb-3">Recently Lost</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div th:each="item : ${recentLostItems}" class="border rounded-lg p-4 hover:shadow-md">
-                            <a th:href="@{/item/{id}(id=${item.id})}" class="font-semibold text-gray-900 hover:text-indigo-600" th:text="${item.title}"></a>
-                            <p class="text-sm text-gray-600 mt-1" th:text="${item.category} + ' • ' + ${item.location}"></p>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">LOST</span>
-                        </div>
-                    </div>
-                </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div th:each="item : ${recentFoundItems}" class="border rounded-lg p-3 hover:shadow-md">
+                <a th:href="@{/item/{id}(id=${item.id})}" class="font-semibold text-gray-900 hover:text-indigo-600" th:text="${item.title}"></a>
+                <p class="text-sm text-gray-500" th:text="${item.location}"></p>
+                <span class="inline-block mt-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">FOUND</span>
             </div>
-            <div x-show="activeTab === 'found'">
-                <div th:if="${recentFoundItems == null or #lists.isEmpty(recentFoundItems)}" class="text-center py-12 text-gray-500">No found items reported yet.</div>
-                <div th:each="item : ${recentFoundItems}" class="border-b border-gray-200 last:border-0 py-4">
-                    <a th:href="@{/item/{id}(id=${item.id})}" class="text-lg font-medium text-gray-900 hover:text-indigo-600" th:text="${item.title}"></a>
-                    <div class="mt-1 text-sm text-gray-600"><span th:text="${item.category}"></span> • <span th:text="${item.location}"></span></div>
-                </div>
-            </div>
-            <div x-show="activeTab === 'lost'">
-                <div th:if="${recentLostItems == null or #lists.isEmpty(recentLostItems)}" class="text-center py-12 text-gray-500">No lost items reported yet.</div>
-                <div th:each="item : ${recentLostItems}" class="border-b border-gray-200 last:border-0 py-4">
-                    <a th:href="@{/item/{id}(id=${item.id})}" class="text-lg font-medium text-gray-900 hover:text-indigo-600" th:text="${item.title}"></a>
-                    <div class="mt-1 text-sm text-gray-600"><span th:text="${item.category}"></span> • <span th:text="${item.location}"></span></div>
-                </div>
+        </div>
+    </div>
+
+    <!-- Recent Lost Items -->
+    <div class="bg-white shadow rounded-lg p-6" th:if="${recentLostItems != null and !#lists.isEmpty(recentLostItems)}">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-gray-800">Recently Lost</h2>
+            <a href="/search?type=LOST" class="text-indigo-600 text-sm hover:underline">View All ?</a>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div th:each="item : ${recentLostItems}" class="border rounded-lg p-3 hover:shadow-md">
+                <a th:href="@{/item/{id}(id=${item.id})}" class="font-semibold text-gray-900 hover:text-indigo-600" th:text="${item.title}"></a>
+                <p class="text-sm text-gray-500" th:text="${item.location}"></p>
+                <span class="inline-block mt-2 px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">LOST</span>
             </div>
         </div>
     </div>

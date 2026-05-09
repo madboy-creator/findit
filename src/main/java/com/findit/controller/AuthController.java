@@ -26,6 +26,7 @@ public class AuthController {
                            @RequestParam(value = "logout", required = false) String logout,
                            @RequestParam(value = "expired", required = false) String expired,
                            Model model) {
+        model.addAttribute("hideNavbar", true);
         if (error != null) {
             model.addAttribute("error", "Invalid email or password");
         }
@@ -33,13 +34,14 @@ public class AuthController {
             model.addAttribute("message", "You have been logged out successfully");
         }
         if (expired != null) {
-            model.addAttribute("error", "Your session has expired");
+            model.addAttribute("error", "Your session has expired. Please login again");
         }
         return "auth/login";
     }
     
     @GetMapping("/register")
     public String registerPage(Model model) {
+        model.addAttribute("hideNavbar", true);
         model.addAttribute("user", new UserRegistrationDto());
         return "auth/register";
     }
@@ -56,12 +58,15 @@ public class AuthController {
                 registrationDto.getPhone()
             );
             redirectAttributes.addFlashAttribute("success", "Registration successful! Please login.");
+            logger.info("New user registered: {}", registrationDto.getEmail());
             return "redirect:/login?registered=true";
         } catch (DuplicateResourceException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
+            logger.warn("Registration failed: {}", e.getMessage());
             return "redirect:/register";
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
+            logger.warn("Registration validation failed: {}", e.getMessage());
             return "redirect:/register";
         }
     }
