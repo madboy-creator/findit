@@ -5,6 +5,7 @@ import com.findit.service.UserService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +26,14 @@ public class AuthController {
     public String loginPage(@RequestParam(value = "error", required = false) String error,
                            @RequestParam(value = "logout", required = false) String logout,
                            @RequestParam(value = "expired", required = false) String expired,
+                           Authentication authentication,
                            Model model) {
+        
+        if (authentication != null && authentication.isAuthenticated() 
+            && !"anonymousUser".equals(authentication.getName())) {
+            return "redirect:/dashboard";
+        }
+        
         model.addAttribute("hideNavbar", true);
         if (error != null) {
             model.addAttribute("error", "Invalid email or password");
@@ -40,7 +48,12 @@ public class AuthController {
     }
     
     @GetMapping("/register")
-    public String registerPage(Model model) {
+    public String registerPage(Authentication authentication, Model model) {
+        if (authentication != null && authentication.isAuthenticated() 
+            && !"anonymousUser".equals(authentication.getName())) {
+            return "redirect:/dashboard";
+        }
+        
         model.addAttribute("hideNavbar", true);
         model.addAttribute("user", new UserRegistrationDto());
         return "auth/register";
@@ -48,7 +61,14 @@ public class AuthController {
     
     @PostMapping("/register")
     public String registerUser(@Valid @ModelAttribute("user") UserRegistrationDto registrationDto,
-                              RedirectAttributes redirectAttributes) {
+                              RedirectAttributes redirectAttributes,
+                              Authentication authentication) {
+        
+        if (authentication != null && authentication.isAuthenticated() 
+            && !"anonymousUser".equals(authentication.getName())) {
+            return "redirect:/dashboard";
+        }
+        
         try {
             userService.registerUser(
                 registrationDto.getName(),

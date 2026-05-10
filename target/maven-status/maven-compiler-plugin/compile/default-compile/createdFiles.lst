@@ -19,6 +19,7 @@ com\findit\repository\UserRepository.class
 com\findit\controller\ItemController$ItemDto.class
 com\findit\controller\ClaimController.class
 com\findit\config\DataInitializer.class
+com\findit\config\SecureAdminInitializer.class
 com\findit\entity\User.class
 com\findit\entity\Claim.class
 com\findit\exception\ResourceNotFoundException.class

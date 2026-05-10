@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Transactional
@@ -37,8 +36,6 @@ public class UserService {
             throw new DuplicateResourceException("Student ID already registered: " + studentId);
         }
         
-        validatePasswordStrength(password);
-        
         User user = new User();
         user.setName(name);
         user.setEmail(email);
@@ -46,11 +43,8 @@ public class UserService {
         user.setStudentId(studentId);
         user.setPhone(phone);
         
-        if (email.endsWith("@findit.com") || email.equals("admin@findit.com")) {
-            user.setRole("ADMIN");
-        } else {
-            user.setRole("STUDENT");
-        }
+        // FIXED: Only STUDENT role - NO automatic ADMIN
+        user.setRole("STUDENT");
         
         user.setEnabled(true);
         user.setAccountNonLocked(true);
@@ -59,30 +53,21 @@ public class UserService {
         user.setUpdatedAt(LocalDateTime.now());
         
         User savedUser = userRepository.save(user);
-        logger.info("New user registered: {} ({}) as {}", email, studentId, user.getRole());
+        logger.info("New student registered: {} ({})", email, studentId);
         return savedUser;
     }
     
     public User findByEmail(String email) {
-        Optional<User> userOpt = userRepository.findByEmail(email);
-        if (userOpt.isEmpty()) {
-            throw new ResourceNotFoundException("User not found with email: " + email);
-        }
-        return userOpt.get();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
     }
     
     public User findById(Long id) {
-        Optional<User> userOpt = userRepository.findById(id);
-        if (userOpt.isEmpty()) {
-            throw new ResourceNotFoundException("User not found with id: " + id);
-        }
-        return userOpt.get();
+        return userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
     }
     
     public User save(User user) {
-        if (user == null) {
-            throw new IllegalArgumentException("User cannot be null");
-        }
         user.setUpdatedAt(LocalDateTime.now());
         return userRepository.save(user);
     }
@@ -99,7 +84,6 @@ public class UserService {
         User user = findByEmail(email);
         user.setLastLogin(LocalDateTime.now());
         userRepository.save(user);
-        logger.info("Last login updated for user: {}", email);
     }
     
     @Transactional
@@ -107,7 +91,6 @@ public class UserService {
         User user = findByEmail(email);
         int attempts = (user.getFailedAttempts() == null ? 0 : user.getFailedAttempts()) + 1;
         user.setFailedAttempts(attempts);
-        logger.warn("Failed attempts for {}: {}/{}", email, attempts, MAX_FAILED_ATTEMPTS);
         
         if (attempts >= MAX_FAILED_ATTEMPTS) {
             user.setAccountNonLocked(false);
@@ -124,7 +107,6 @@ public class UserService {
         user.setAccountNonLocked(true);
         user.setLockTime(null);
         userRepository.save(user);
-        logger.info("Failed attempts reset for user: {}", email);
     }
     
     public void deleteUser(Long userId) {
@@ -138,23 +120,5 @@ public class UserService {
             return userRepository.findAll();
         }
         return userRepository.findByNameContainingOrEmailContaining(query, query);
-    }
-    
-    private void validatePasswordStrength(String password) {
-        if (password == null || password.length() < 8) {
-            throw new IllegalArgumentException("Password must be at least 8 characters long");
-        }
-        if (!password.matches(".*[A-Z].*")) {
-            throw new IllegalArgumentException("Password must contain at least one uppercase letter");
-        }
-        if (!password.matches(".*[a-z].*")) {
-            throw new IllegalArgumentException("Password must contain at least one lowercase letter");
-        }
-        if (!password.matches(".*\\d.*")) {
-            throw new IllegalArgumentException("Password must contain at least one digit");
-        }
-        if (!password.matches(".*[@#$%^&+=!].*")) {
-            throw new IllegalArgumentException("Password must contain at least one special character (@#$%^&+=!)");
-        }
     }
 }
