@@ -1,117 +1,114 @@
 package com.findit.controller;
 
-import com.findit.exception.DuplicateResourceException;
-import com.findit.service.UserService;
-import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.security.core.Authentication;
+import com.findit.entity.User;
+import com.findit.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.time.LocalDateTime;
 
 @Controller
 public class AuthController {
-    
-    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
-    
-    private final UserService userService;
-    
-    public AuthController(UserService userService) {
-        this.userService = userService;
-    }
-    
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @GetMapping("/login")
     public String loginPage(@RequestParam(value = "error", required = false) String error,
-                           @RequestParam(value = "logout", required = false) String logout,
-                           @RequestParam(value = "expired", required = false) String expired,
-                           Authentication authentication,
+                           @RequestParam(value = "registered", required = false) String registered,
                            Model model) {
-        
-        if (authentication != null && authentication.isAuthenticated() 
-            && !"anonymousUser".equals(authentication.getName())) {
-            return "redirect:/dashboard";
-        }
-        
-        model.addAttribute("hideNavbar", true);
         if (error != null) {
-            model.addAttribute("error", "Invalid email or password");
+            model.addAttribute("error", "Invalid email or password!");
         }
-        if (logout != null) {
-            model.addAttribute("message", "You have been logged out successfully");
-        }
-        if (expired != null) {
-            model.addAttribute("error", "Your session has expired. Please login again");
+        if (registered != null) {
+            model.addAttribute("message", "Registration successful! Please login.");
         }
         return "auth/login";
     }
-    
+
     @GetMapping("/register")
-    public String registerPage(Authentication authentication, Model model) {
-        if (authentication != null && authentication.isAuthenticated() 
-            && !"anonymousUser".equals(authentication.getName())) {
-            return "redirect:/dashboard";
-        }
-        
-        model.addAttribute("hideNavbar", true);
-        model.addAttribute("user", new UserRegistrationDto());
+    public String registerPage(Model model) {
+        model.addAttribute("user", new User());
         return "auth/register";
     }
-    
+
     @PostMapping("/register")
-    public String registerUser(@Valid @ModelAttribute("user") UserRegistrationDto registrationDto,
-                              RedirectAttributes redirectAttributes,
-                              Authentication authentication) {
-        
-        if (authentication != null && authentication.isAuthenticated() 
-            && !"anonymousUser".equals(authentication.getName())) {
-            return "redirect:/dashboard";
-        }
-        
+    public String registerUser(@ModelAttribute User user, 
+                              Model model) {
         try {
-            userService.registerUser(
-                registrationDto.getName(),
-                registrationDto.getEmail(),
-                registrationDto.getPassword(),
-                registrationDto.getStudentId(),
-                registrationDto.getPhone()
-            );
-            redirectAttributes.addFlashAttribute("success", "Registration successful! Please login.");
-            logger.info("New user registered: {}", registrationDto.getEmail());
+            // Check if email already exists
+            if (userRepository.existsByEmail(user.getEmail())) {
+                model.addAttribute("error", "Email already registered");
+                return "auth/register";
+            }
+            
+            // Set required fields (your entity already has defaults, but we set explicitly)
+            user.setRole("STUDENT");
+            user.setEnabled(true);
+            user.setAccountNonLocked(true);
+            user.setFailedAttempts(0);
+            user.setCreatedAt(LocalDateTime.now());
+            user.setUpdatedAt(LocalDateTime.now());
+            
+            // Handle null values (in case form doesn't have these fields)
+            if (user.getStudentId() == null || user.getStudentId().isEmpty()) {
+                user.setStudentId("STU" + System.currentTimeMillis());
+            }
+            
+            if (user.getPhone() == null || user.getPhone().isEmpty()) {
+                user.setPhone("Not provided");
+            }
+            
+            // Encode password
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            
+            // Save user
+            userRepository.save(user);
+            
             return "redirect:/login?registered=true";
-        } catch (DuplicateResourceException e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-            logger.warn("Registration failed: {}", e.getMessage());
-            return "redirect:/register";
-        } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("error", e.getMessage());
-            logger.warn("Registration validation failed: {}", e.getMessage());
-            return "redirect:/register";
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("error", "Registration failed: " + e.getMessage());
+            return "auth/register";
         }
     }
-    
-    @GetMapping("/logout-success")
-    public String logoutSuccess() {
-        return "redirect:/login?logout=true";
-    }
-    
-    static class UserRegistrationDto {
-        private String name;
-        private String email;
-        private String password;
-        private String studentId;
-        private String phone;
-        
-        public String getName() { return name; }
-        public void setName(String name) { this.name = name; }
-        public String getEmail() { return email; }
-        public void setEmail(String email) { this.email = email; }
-        public String getPassword() { return password; }
-        public void setPassword(String password) { this.password = password; }
-        public String getStudentId() { return studentId; }
-        public void setStudentId(String studentId) { this.studentId = studentId; }
-        public String getPhone() { return phone; }
-        public void setPhone(String phone) { this.phone = phone; }
+
+    @GetMapping("/setup")
+    @ResponseBody
+    public String setupAdmin() {
+        try {
+            if (!userRepository.existsByEmail("admin@findit.com")) {
+                User admin = new User();
+                admin.setName("Administrator");
+                admin.setEmail("admin@findit.com");
+                admin.setPassword(passwordEncoder.encode("Admin123!"));
+                admin.setStudentId("ADMIN001");
+                admin.setPhone("+250788123456");
+                admin.setRole("ADMIN");
+                admin.setEnabled(true);
+                admin.setAccountNonLocked(true);
+                admin.setFailedAttempts(0);
+                admin.setCreatedAt(LocalDateTime.now());
+                admin.setUpdatedAt(LocalDateTime.now());
+                userRepository.save(admin);
+                return "<h3>✅ Admin user created successfully!</h3>" +
+                       "<p>You can now login with:</p>" +
+                       "<ul>" +
+                       "<li><strong>Email:</strong> admin@findit.com</li>" +
+                       "<li><strong>Password:</strong> Admin123!</li>" +
+                       "</ul>" +
+                       "<a href='/login'>Go to Login Page</a>";
+            }
+            return "<h3>ℹ️ Admin user already exists!</h3><a href='/login'>Go to Login Page</a>";
+        } catch (Exception e) {
+            return "<h3>❌ Error creating admin:</h3><p>" + e.getMessage() + "</p>";
+        }
     }
 }

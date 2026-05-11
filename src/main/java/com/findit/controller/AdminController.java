@@ -63,28 +63,48 @@ public class AdminController {
     }
     
     @PostMapping("/user/{id}/role")
-    public String updateUserRole(@PathVariable Long id, @RequestParam String role) {
-        User user = userService.findById(Objects.requireNonNull(id));
-        user.setRole(role);
-        userService.save(user);
+    public String updateUserRole(@PathVariable Long id, @RequestParam String role, RedirectAttributes redirectAttributes) {
+        try {
+            User user = userService.findById(Objects.requireNonNull(id));
+            user.setRole(role);
+            userService.save(user);
+            redirectAttributes.addFlashAttribute("updated", "true");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to update role");
+        }
         return "redirect:/admin/users";
     }
     
     @PostMapping("/user/{id}/toggle")
-    public String toggleUserEnabled(@PathVariable Long id) {
-        User user = userService.findById(Objects.requireNonNull(id));
-        user.setEnabled(!user.getEnabled());
-        userService.save(user);
+    public String toggleUserEnabled(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            User user = userService.findById(Objects.requireNonNull(id));
+            user.setEnabled(!user.getEnabled());
+            userService.save(user);
+            redirectAttributes.addFlashAttribute("updated", "true");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to toggle user status");
+        }
         return "redirect:/admin/users";
     }
     
-    @DeleteMapping("/user/{id}/delete")
-    @ResponseBody
-    public Map<String, String> deleteUser(@PathVariable Long id) {
-        userService.deleteUser(Objects.requireNonNull(id));
-        Map<String, String> response = new HashMap<>();
-        response.put("status", "success");
-        return response;
+    // FIXED: Changed from @DeleteMapping to @PostMapping to match HTML form
+    @PostMapping("/user/{id}/delete")
+    public String deleteUser(@PathVariable Long id, RedirectAttributes redirectAttributes, Authentication authentication) {
+        try {
+            // Prevent admin from deleting themselves
+            User currentUser = userService.findByEmail(authentication.getName());
+            if (currentUser.getId().equals(id)) {
+                redirectAttributes.addFlashAttribute("error", "Cannot delete your own account!");
+                return "redirect:/admin/users";
+            }
+            
+            userService.deleteUser(Objects.requireNonNull(id));
+            redirectAttributes.addFlashAttribute("deleted", "true");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Failed to delete user: " + e.getMessage());
+        }
+        return "redirect:/admin/users";
     }
     
     @GetMapping("/items")

@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.header.writers.frameoptions.XFrameOptionsHeaderWriter;
 
 @Configuration
 @EnableWebSecurity
@@ -31,9 +32,14 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/login", "/register", "/css/**", "/js/**", "/images/**", "/webjars/**", "/uploads/**", "/favicon.ico", "/error").permitAll()
+                .requestMatchers("/", "/login", "/register", "/setup", "/create-admin", "/h2-console/**", 
+                               "/css/**", "/js/**", "/images/**", "/webjars/**", "/uploads/**", 
+                               "/favicon.ico", "/error").permitAll()  // Added /setup, /create-admin, /h2-console
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
+            )
+            .headers(headers -> headers
+                .addHeaderWriter(new XFrameOptionsHeaderWriter(XFrameOptionsHeaderWriter.XFrameOptionsMode.SAMEORIGIN))
             )
             .formLogin(form -> form
                 .loginPage("/login")
@@ -54,4 +60,5 @@ public class SecurityConfig {
         
         return http.build();
     }
+
 }
