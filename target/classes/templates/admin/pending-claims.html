@@ -1,53 +1,76 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/layout :: common-head('Pending Claims')}"></head>
-<body x-data="{ showRejectModal: false, selectedClaimId: null, rejectReason: '' }">
+<body>
 
 <div th:replace="~{fragments/layout :: navbar}"></div>
 
-<div class="py-6 px-4">
+<div class="py-6 px-4 max-w-7xl mx-auto" x-data="{ showRejectModal: false, selectedClaimId: null, rejectReason: '' }">
     <h1 class="text-2xl font-bold text-gray-900 mb-6">Pending Claims</h1>
+    
+    <!-- Success/Error Messages -->
+    <div th:if="${param.success != null}" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+        ✅ <span th:text="${param.success}"></span>
+    </div>
+    <div th:if="${param.error != null}" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        ❌ <span th:text="${param.error}"></span>
+    </div>
     
     <div class="bg-white shadow rounded-lg overflow-hidden">
         <div th:if="${#lists.isEmpty(claims)}" class="p-8 text-center text-gray-500">
+            <i class="fas fa-inbox text-5xl mb-3 text-gray-300"></i>
             <p>No pending claims to review.</p>
-            <a href="/admin/dashboard" class="mt-4 inline-block text-indigo-600">Back to Dashboard</a>
+            <a href="/admin/dashboard" class="mt-4 inline-block text-indigo-600 hover:underline">Back to Dashboard</a>
         </div>
         
-        <div th:each="claim : ${claims}" class="border-b border-gray-200 p-6 hover:bg-gray-50">
+        <div th:each="claim : ${claims}" class="border-b border-gray-200 p-6 hover:bg-gray-50 transition">
             <h3 class="text-xl font-semibold text-gray-900">Claim #<span th:text="${claim.id}"></span></h3>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-4">
                 <div>
-                    <h4 class="font-medium text-gray-700 mb-2">Item Information</h4>
+                    <h4 class="font-medium text-gray-700 mb-2 flex items-center">
+                        <i class="fas fa-box text-indigo-500 mr-2"></i> Item Information
+                    </h4>
                     <p><strong>Title:</strong> <span th:text="${claim.item.title}"></span></p>
                     <p><strong>Category:</strong> <span th:text="${claim.item.category}"></span></p>
                     <p><strong>Location:</strong> <span th:text="${claim.item.location}"></span></p>
-                    <p><strong>Type:</strong> <span th:text="${claim.item.type}"></span></p>
+                    <p><strong>Type:</strong> 
+                        <span th:if="${claim.item.type == 'LOST'}" class="text-red-600">Lost</span>
+                        <span th:if="${claim.item.type == 'FOUND'}" class="text-green-600">Found</span>
+                    </p>
                 </div>
                 <div>
-                    <h4 class="font-medium text-gray-700 mb-2">Claimant Information</h4>
+                    <h4 class="font-medium text-gray-700 mb-2 flex items-center">
+                        <i class="fas fa-user text-indigo-500 mr-2"></i> Claimant Information
+                    </h4>
                     <p><strong>Name:</strong> <span th:text="${claim.claimant.name}"></span></p>
                     <p><strong>Email:</strong> <span th:text="${claim.claimant.email}"></span></p>
                     <p><strong>Student ID:</strong> <span th:text="${claim.claimant.studentId}"></span></p>
                     <p><strong>Phone:</strong> <span th:text="${claim.claimant.phone}"></span></p>
+                    <p><strong>Submitted:</strong> <span th:text="${#temporals.format(claim.submittedAt, 'MMM dd, yyyy HH:mm')}"></span></p>
                 </div>
             </div>
             
-            <div class="bg-gray-50 p-4 rounded-lg my-4">
-                <h4 class="font-medium text-gray-700 mb-2">Verification Answers</h4>
-                <p class="whitespace-pre-wrap" th:text="${claim.answers}"></p>
+            <div class="bg-gray-50 p-4 rounded-lg my-4 border border-gray-200">
+                <h4 class="font-medium text-gray-700 mb-2 flex items-center">
+                    <i class="fas fa-question-circle text-indigo-500 mr-2"></i> Verification Answers
+                </h4>
+                <p class="whitespace-pre-wrap text-gray-700" th:text="${claim.answers}"></p>
             </div>
             
             <div class="flex gap-3 justify-end mt-4">
-                <form method="post" th:action="@{/admin/claim/{id}/approve(id=${claim.id})}">
-                    
-                    <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700">
-                        <i class="fas fa-check mr-1"></i> Approve Claim
+                <!-- Approve Form -->
+                <form method="post" th:action="@{/admin/claim/{id}/approve(id=${claim.id})}" 
+                      onsubmit="return confirm('✅ Are you sure you want to APPROVE this claim?\n\nThe item will be marked as claimed.');">
+                    <button type="submit" class="bg-green-600 text-white px-5 py-2 rounded-md hover:bg-green-700 transition shadow-sm">
+                        <i class="fas fa-check mr-2"></i> Approve Claim
                     </button>
                 </form>
-                <button @click="selectedClaimId = claim.id; showRejectModal = true" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700">
-                    <i class="fas fa-times mr-1"></i> Reject Claim
+                
+                <!-- Reject Button -->
+                <button @click="selectedClaimId = ${claim.id}; showRejectModal = true" 
+                        class="bg-red-600 text-white px-5 py-2 rounded-md hover:bg-red-700 transition shadow-sm">
+                    <i class="fas fa-times mr-2"></i> Reject Claim
                 </button>
             </div>
         </div>
@@ -55,17 +78,31 @@
 </div>
 
 <!-- Reject Modal -->
-<div x-show="showRejectModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
+<div x-show="showRejectModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen px-4">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75" @click="showRejectModal = false"></div>
-        <div class="relative bg-white rounded-lg max-w-md w-full p-6">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Reject Claim</h3>
-            <form method="post" th:action="@{/admin/claim/{id}/reject(id=${selectedClaimId})}">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="showRejectModal = false"></div>
+        
+        <div class="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <div class="mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Reject Claim</h3>
+                <p class="text-sm text-gray-500 mt-1">Please provide a reason for rejecting this claim.</p>
+            </div>
+            
+            <form method="post" th:action="@{/admin/claim/{id}/reject(id=selectedClaimId)}" 
+                  @submit="if(!rejectReason) { alert('Please provide a reason'); return false; }">
+                <textarea name="reason" x-model="rejectReason" rows="4" required
+                          placeholder="Enter rejection reason here..."
+                          class="w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-red-500 focus:border-red-500"></textarea>
                 
-                <textarea name="reason" x-model="rejectReason" rows="3" required placeholder="Reason for rejection..." class="w-full border rounded-md p-2"></textarea>
-                <div class="mt-4 flex justify-end gap-2">
-                    <button type="button" @click="showRejectModal = false" class="px-4 py-2 border rounded-md">Cancel</button>
-                    <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">Reject</button>
+                <div class="mt-4 flex justify-end gap-3">
+                    <button type="button" @click="showRejectModal = false; rejectReason = ''" 
+                            class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition">
+                        <i class="fas fa-times mr-1"></i> Reject Claim
+                    </button>
                 </div>
             </form>
         </div>
