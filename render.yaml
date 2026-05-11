@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: findit
+    runtime: image
+    repo: https://github.com/madboy-creator/findit
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: production
+      - key: ADMIN_EMAIL
+        value: admin@findit.com
+      - key: ADMIN_PASSWORD
+        value: Admin123!
