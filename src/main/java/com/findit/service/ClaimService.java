@@ -48,6 +48,7 @@ public class ClaimService {
         claim.setAnswers(answers);
         claim.setStatus("PENDING");
         claim.setSubmittedAt(LocalDateTime.now());
+        claim.setUpdatedAt(LocalDateTime.now());
         
         Claim savedClaim = claimRepository.save(claim);
         logger.info("New claim submitted for item {} by {}", itemId, userEmail);
@@ -61,7 +62,9 @@ public class ClaimService {
     }
     
     public List<Claim> getPendingClaims() {
-        return claimRepository.findByStatusOrderBySubmittedAtAsc("PENDING");
+        List<Claim> claims = claimRepository.findByStatusOrderBySubmittedAtAsc("PENDING");
+        logger.debug("Found {} pending claims", claims != null ? claims.size() : 0);
+        return claims == null ? new ArrayList<>() : claims;
     }
     
     public Claim findById(Long id) {
@@ -71,23 +74,49 @@ public class ClaimService {
     
     @Transactional
     public void approveClaim(Long claimId, String adminEmail) {
+        logger.info("Attempting to approve claim {} by {}", claimId, adminEmail);
+        
         Claim claim = findById(claimId);
+        
+        if (!"PENDING".equals(claim.getStatus())) {
+            throw new IllegalStateException("Claim is not pending. Current status: " + claim.getStatus());
+        }
+        
         claim.setStatus("APPROVED");
         claim.setReviewedBy(adminEmail);
         claim.setReviewedAt(LocalDateTime.now());
+        claim.setUpdatedAt(LocalDateTime.now());
         claimRepository.save(claim);
-        itemService.markAsClaimed(claim.getItem().getId());
+        
+        // Mark item as claimed
+        try {
+            itemService.markAsClaimed(claim.getItem().getId());
+            logger.info("Item {} marked as claimed", claim.getItem().getId());
+        } catch (Exception e) {
+            logger.error("Failed to mark item as claimed: {}", e.getMessage());
+            throw new RuntimeException("Failed to mark item as claimed: " + e.getMessage());
+        }
+        
         logger.info("Claim {} approved by admin {}", claimId, adminEmail);
     }
     
     @Transactional
     public void rejectClaim(Long claimId, String reason, String adminEmail) {
+        logger.info("Attempting to reject claim {} by {}", claimId, adminEmail);
+        
         Claim claim = findById(claimId);
+        
+        if (!"PENDING".equals(claim.getStatus())) {
+            throw new IllegalStateException("Claim is not pending. Current status: " + claim.getStatus());
+        }
+        
         claim.setStatus("REJECTED");
         claim.setRejectionReason(reason);
         claim.setReviewedBy(adminEmail);
         claim.setReviewedAt(LocalDateTime.now());
+        claim.setUpdatedAt(LocalDateTime.now());
         claimRepository.save(claim);
+        
         logger.info("Claim {} rejected by admin {}: {}", claimId, adminEmail, reason);
     }
     

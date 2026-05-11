@@ -138,12 +138,13 @@ public class ItemService {
         return itemRepository.countByTypeAndStatus("LOST", "ACTIVE");
     }
     
-    @Transactional
+   @Transactional
     public void markAsClaimed(Long itemId) {
         Item item = findById(itemId);
         item.setStatus("CLAIMED");
+        item.setUpdatedAt(LocalDateTime.now());
         itemRepository.save(item);
-        logger.info("Item marked as claimed: {}", itemId);
+        logger.info("Item {} marked as CLAIMED", itemId);
     }
     public Page<Item> getAllActiveItems(Pageable pageable) {
         return itemRepository.findAllByStatus("ACTIVE", pageable);

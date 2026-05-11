@@ -59,7 +59,7 @@
             </div>
             
             <div class="flex gap-3 justify-end mt-4">
-                <!-- Approve Form -->
+                <!-- APPROVE Form - FIXED: Now points to approve endpoint -->
                 <form method="post" th:action="@{/admin/claim/{id}/approve(id=${claim.id})}" 
                       onsubmit="return confirm('✅ Are you sure you want to APPROVE this claim?\n\nThe item will be marked as claimed.');">
                     <button type="submit" class="bg-green-600 text-white px-5 py-2 rounded-md hover:bg-green-700 transition shadow-sm">
@@ -77,10 +77,10 @@
     </div>
 </div>
 
-<!-- Reject Modal -->
+<!-- Reject Modal - FIXED: Now properly uses selectedClaimId -->
 <div x-show="showRejectModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen px-4">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="showRejectModal = false"></div>
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="showRejectModal = false; rejectReason = ''"></div>
         
         <div class="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6">
             <div class="mb-4">
@@ -88,7 +88,8 @@
                 <p class="text-sm text-gray-500 mt-1">Please provide a reason for rejecting this claim.</p>
             </div>
             
-            <form method="post" th:action="@{/admin/claim/{id}/reject(id=selectedClaimId)}" 
+            <!-- FIXED: Use ${selectedClaimId} with proper Thymeleaf expression -->
+            <form method="post" th:action="@{/admin/claim/{id}/reject(id=${selectedClaimId})}" 
                   @submit="if(!rejectReason) { alert('Please provide a reason'); return false; }">
                 <textarea name="reason" x-model="rejectReason" rows="4" required
                           placeholder="Enter rejection reason here..."
