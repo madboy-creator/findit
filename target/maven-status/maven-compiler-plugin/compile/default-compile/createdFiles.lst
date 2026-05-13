@@ -12,7 +12,6 @@ com\findit\controller\AuthController.class
 com\findit\controller\YearController.class
 com\findit\config\WebConfig.class
 com\findit\repository\ItemRepository.class
-com\findit\controller\AuthController$UserRegistrationDto.class
 com\findit\config\CustomAuthenticationFailureHandler.class
 com\findit\exception\UnauthorizedAccessException.class
 com\findit\repository\UserRepository.class

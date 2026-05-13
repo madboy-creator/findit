@@ -60,4 +60,11 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     List<Item> findExpiredItems(@Param("date") java.time.LocalDateTime date);
     Page<Item> findAllByStatus(String status, Pageable pageable);
 
+       // Find items by status (ACTIVE, CLAIMED, etc.)
+       List<Item> findByStatus(String status);
+
+       // Optional: Find by type AND status
+       List<Item> findByTypeAndStatus(String type, String status);
+
+
 }

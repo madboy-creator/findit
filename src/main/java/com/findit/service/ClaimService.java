@@ -72,32 +72,14 @@ public class ClaimService {
                 .orElseThrow(() -> new ResourceNotFoundException("Claim not found with id: " + id));
     }
     
-    @Transactional
+   @Transactional
     public void approveClaim(Long claimId, String adminEmail) {
-        logger.info("Attempting to approve claim {} by {}", claimId, adminEmail);
-        
         Claim claim = findById(claimId);
-        
-        if (!"PENDING".equals(claim.getStatus())) {
-            throw new IllegalStateException("Claim is not pending. Current status: " + claim.getStatus());
-        }
-        
         claim.setStatus("APPROVED");
-        claim.setReviewedBy(adminEmail);
-        claim.setReviewedAt(LocalDateTime.now());
-        claim.setUpdatedAt(LocalDateTime.now());
         claimRepository.save(claim);
         
-        // Mark item as claimed
-        try {
-            itemService.markAsClaimed(claim.getItem().getId());
-            logger.info("Item {} marked as claimed", claim.getItem().getId());
-        } catch (Exception e) {
-            logger.error("Failed to mark item as claimed: {}", e.getMessage());
-            throw new RuntimeException("Failed to mark item as claimed: " + e.getMessage());
-        }
-        
-        logger.info("Claim {} approved by admin {}", claimId, adminEmail);
+        // ✅ THIS CALLS markAsClaimed() - IT WORKS!
+        itemService.markAsClaimed(claim.getItem().getId());
     }
     
     @Transactional
@@ -126,5 +108,12 @@ public class ClaimService {
     
     public List<Claim> getAllClaims() {
         return claimRepository.findAllByOrderBySubmittedAtDesc();
+    }
+
+    // In ClaimService.java - add this helper
+    public boolean hasUserClaimedItem(Long itemId, String userEmail) {
+        User user = userService.findByEmail(userEmail);
+        Item item = itemService.findById(itemId);
+        return claimRepository.existsByItemAndClaimant(item, user);
     }
 }

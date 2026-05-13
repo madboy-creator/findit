@@ -120,6 +120,18 @@ public class ItemService {
         itemRepository.delete(item);
         logger.info("Item deleted: {} by {}", itemId, userEmail);
     }
+
+    @Transactional
+    public void deleteItemByAdmin(Long itemId) {
+        Item item = findById(itemId);
+        logger.info("Admin deleting item: {} (ID: {})", item.getTitle(), itemId);
+        
+        // Optional: Check if there are any claims on this item
+        // and handle them (delete or mark as orphaned)
+        
+        itemRepository.delete(item);
+        logger.info("Item {} deleted successfully by admin", itemId);
+    }
     
     public Page<Item> searchItems(String query, String category, String location, 
                                   String type, Pageable pageable) {
@@ -137,17 +149,30 @@ public class ItemService {
     public long getLostItemsCount() {
         return itemRepository.countByTypeAndStatus("LOST", "ACTIVE");
     }
+
+    // Add this method - returns ALL items including CLAIMED
+    public List<Item> getAllItems() {
+        logger.info("Fetching all items including claimed ones for admin");
+        return itemRepository.findAll();
+    }
+
+    // Add this method - filter items by status (ACTIVE, CLAIMED, etc.)
+    public List<Item> getItemsByStatus(String status) {
+        logger.info("Fetching items with status: {}", status);
+        return itemRepository.findByStatus(status);
+    }
     
    @Transactional
     public void markAsClaimed(Long itemId) {
         Item item = findById(itemId);
+        if (!"ACTIVE".equals(item.getStatus())) {
+            logger.warn("Attempted to claim item {} but status is {}", itemId, item.getStatus());
+            throw new IllegalStateException("Item cannot be claimed because status is: " + item.getStatus());
+        }
         item.setStatus("CLAIMED");
         item.setUpdatedAt(LocalDateTime.now());
         itemRepository.save(item);
-        logger.info("Item {} marked as CLAIMED", itemId);
-    }
-    public Page<Item> getAllActiveItems(Pageable pageable) {
-        return itemRepository.findAllByStatus("ACTIVE", pageable);
     }
 
+   
 }

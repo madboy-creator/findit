@@ -109,10 +109,28 @@ public class UserService {
         userRepository.save(user);
     }
     
+    @Transactional
     public void deleteUser(Long userId) {
         User user = findById(userId);
+        logger.info("Attempting to delete user: {} ({})", user.getEmail(), user.getId());
+        
+        // Check if user has items - delete them first
+        if (user.getItems() != null && !user.getItems().isEmpty()) {
+            logger.info("User has {} items, deleting them first", user.getItems().size());
+            user.getItems().clear(); // This removes the association
+            // Or use: itemRepository.deleteAll(user.getItems());
+        }
+        
+        // Check if user has claims - delete them first
+        if (user.getClaims() != null && !user.getClaims().isEmpty()) {
+            logger.info("User has {} claims, deleting them first", user.getClaims().size());
+            user.getClaims().clear(); // This removes the association
+            // Or use: claimRepository.deleteAll(user.getClaims());
+        }
+        
+        // Now delete the user
         userRepository.delete(user);
-        logger.info("User deleted: {} ({})", user.getEmail(), user.getId());
+        logger.info("User deleted successfully: {} ({})", user.getEmail(), user.getId());
     }
     
     public List<User> searchUsers(String query) {

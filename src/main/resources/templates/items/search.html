@@ -48,7 +48,8 @@
                               th:class="${item.type == 'FOUND'} ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
                               th:text="${item.type}"></span>
                     </div>
-                    <p class="text-sm text-gray-600 mb-2" th:text="${item.category} + ' • ' + ${item.location}"></p>
+                    
+                    <p th:text="${item.category} + ' â€¢ ' + ${item.location}"></p>
                     <p class="text-sm text-gray-500 mb-3" th:text="${item.description?.length > 80 ? item.description.substring(0,80) + '...' : item.description}"></p>
                     <div class="flex justify-between items-center">
                         <span class="text-xs text-gray-400" th:text="${item.createdAt}"></span>

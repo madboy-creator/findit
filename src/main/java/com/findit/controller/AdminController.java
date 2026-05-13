@@ -1,5 +1,6 @@
 package com.findit.controller;
 
+import com.findit.entity.Item;
 import com.findit.entity.User;
 import com.findit.service.ClaimService;
 import com.findit.service.ItemService;
@@ -106,19 +107,59 @@ public class AdminController {
         }
         return "redirect:/admin/users";
     }
+
+    // Add this method for ADMIN deleting any ITEM
+    @PostMapping("/item/{id}/delete")
+    public String deleteItem(@PathVariable Long id, 
+                            RedirectAttributes redirectAttributes, 
+                            Authentication authentication) {
+        try {
+            Item item = itemService.findById(id);
+            logger.info("Admin {} deleting item: {} (ID: {})", 
+                        authentication.getName(), item.getTitle(), id);
+            
+            // Call the admin delete method in ItemService
+            itemService.deleteItemByAdmin(id);
+            
+            redirectAttributes.addFlashAttribute("success", 
+                "Item '" + item.getTitle() + "' deleted successfully!");
+        } catch (Exception e) {
+            logger.error("Failed to delete item {}: {}", id, e.getMessage());
+            redirectAttributes.addFlashAttribute("error", 
+                "Failed to delete item: " + e.getMessage());
+        }
+        return "redirect:/admin/items";
+    }
     
-    @GetMapping("/items")
-    public String viewAllItems(@RequestParam(required = false) String type, Model model) {
-        if ("FOUND".equals(type)) {
-            model.addAttribute("items", itemService.getRecentFoundItems(100));
+   @GetMapping("/items")
+    public String viewAllItems(@RequestParam(required = false) String type, 
+                            @RequestParam(required = false) String status,
+                            Model model) {
+        List<Item> items;
+        
+        // If filtering by status (e.g., CLAIMED)
+        if (status != null && !status.isEmpty()) {
+            items = itemService.getItemsByStatus(status);
+            model.addAttribute("pageTitle", status + " Items");
+        }
+        // If filtering by type (FOUND or LOST)
+        else if ("FOUND".equals(type)) {
+            items = itemService.getRecentFoundItems(100);
             model.addAttribute("pageTitle", "Found Items");
-        } else if ("LOST".equals(type)) {
-            model.addAttribute("items", itemService.getRecentLostItems(100));
+        } 
+        else if ("LOST".equals(type)) {
+            items = itemService.getRecentLostItems(100);
             model.addAttribute("pageTitle", "Lost Items");
-        } else {
-            model.addAttribute("items", itemService.getRecentFoundItems(50));
+        } 
+        // Show ALL items including CLAIMED for admin overview
+        else {
+            items = itemService.getAllItems();  // NEW: Returns all items including CLAIMED
             model.addAttribute("pageTitle", "All Items");
         }
+        
+        model.addAttribute("items", items);
+        model.addAttribute("currentFilterType", type);
+        model.addAttribute("currentFilterStatus", status);
         return "admin/items";
     }
     
